@@ -1,5 +1,5 @@
 mod domain;
-mod provider;
+mod infrastructure;
 
 fn main() {
     println!("Hello, world!");
