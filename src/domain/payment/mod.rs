@@ -1,3 +1,5 @@
+pub mod method;
 pub mod payment;
-pub mod payment_status;
-pub mod payment_method;
+pub mod provider;
+pub mod repository;
+pub mod status;
