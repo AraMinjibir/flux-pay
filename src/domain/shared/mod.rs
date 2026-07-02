@@ -1,3 +1,2 @@
-
-pub mod money;
 pub mod currency;
+pub mod money;
