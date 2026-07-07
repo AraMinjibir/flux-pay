@@ -673,6 +673,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "flux-pay"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "strum",
+ "strum_macros",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1317,22 +1333,6 @@ dependencies = [
  "redox_syscall 0.5.18",
  "smallvec",
  "windows-link",
-]
-
-[[package]]
-name = "pay-flux"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "strum",
- "strum_macros",
- "tokio",
- "uuid",
 ]
 
 [[package]]
