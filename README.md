@@ -1,4 +1,4 @@
-# PayFlux
+# FluxPay
 
 > **High-performance payment orchestration engine built in Rust for reliable, fault-tolerant payment execution across multiple payment providers.**
 
@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-PayFlux is a production-oriented backend that explores the core engineering challenges of modern payment infrastructure. It focuses on building a resilient payment orchestration layer capable of routing transactions across multiple providers while ensuring correctness, consistency, and reliability.
+FluxPay is a production-oriented backend that explores the core engineering challenges of modern payment infrastructure. It focuses on building a resilient payment orchestration layer capable of routing transactions across multiple providers while ensuring correctness, consistency, and reliability.
 
 ---
 
@@ -16,7 +16,7 @@ PayFlux is a production-oriented backend that explores the core engineering chal
 
 Modern payment systems must handle failures without compromising transaction integrity.
 
-PayFlux addresses challenges such as:
+FluxPay addresses challenges such as:
 
 * Duplicate payment requests
 * Provider outages
@@ -175,7 +175,7 @@ Every request is validated, protected by Redis-backed idempotency, persisted bef
 * Docker Compose
 
 # Clone repository
-git@github.com:AraMinjibir/pay-flux.git
+git@github.com:AraMinjibir/flux-pay.git
 cd pay-flux
 
 # Configure environment
