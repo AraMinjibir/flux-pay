@@ -22,3 +22,4 @@ sqlx = { version = "0.8.x", features = [
 strum = "0.27"
 strum_macros = "0.27"
 async-trait = "0.1"
+dotenvy = "0.15"
