@@ -1,4 +1,4 @@
-use crate::domain::shared::currency::Currency;
+use crate::domain::{errors::domain_error::DomainError, shared::currency::Currency};
 
 #[derive(Debug, Clone)]
 pub struct Money {
@@ -7,8 +7,11 @@ pub struct Money {
 }
 
 impl Money {
-    pub fn new(amount: i64, currency: Currency) -> Self {
-        Self { amount, currency }
+    pub fn new(amount: i64, currency: Currency) -> Result<Self, DomainError> {
+        if amount <= 0 {
+            return Err(DomainError::InvalidAmount);
+        }
+        Ok(Self { amount, currency })
     }
 
     pub fn amount(&self) -> i64 {
