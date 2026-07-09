@@ -198,7 +198,7 @@ impl PaymentRepository for PostgresPaymentRepository {
         SET status = $1
         WHERE id = $2
         "#,
-            "Deleted",
+            "DELETED",
             id
         )
         .execute(&self.pool)
