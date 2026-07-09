@@ -13,11 +13,11 @@ use crate::{
     infrastructure::rows::payment_row::PaymentRow,
 };
 
-pub struct PaymentRepositoryImpl {
+pub struct PostgresPaymentRepository {
     pool: PgPool,
 }
 
-impl PaymentRepositoryImpl {
+impl PostgresPaymentRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
@@ -25,14 +25,14 @@ impl PaymentRepositoryImpl {
 
 #[async_trait]
 
-impl PaymentRepository for PaymentRepositoryImpl {
+impl PaymentRepository for PostgresPaymentRepository {
     async fn save(&self, payment: &Payment) -> Result<(), RepositoryError> {
         let row = PaymentRow::from_domain(payment);
         sqlx::query!(
             r#"
             INSERT INTO payments (
             id, merchant_id, amount, currency, description, reference, status, payment_method, 
-           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, paid_at, updated_at
+           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, created_at, paid_at
             )
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             "#,
@@ -49,8 +49,8 @@ impl PaymentRepository for PaymentRepositoryImpl {
             row.failure_reason,
             row.retry_count,
             row.idempotency_key,
-            row.paid_at,
-            row.updated_at
+            row.created_at,
+            row.paid_at
         ).execute(&self.pool)
         .await
         .map_err(map_sqlx_error)?;
@@ -62,7 +62,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
         let row: Option<PaymentRow> = query_as!(PaymentRow, r#"
         SELECT
         id, merchant_id, amount, currency, description, reference, status, payment_method, 
-           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, paid_at, updated_at
+           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, created_at, paid_at
            FROM payments
            WHERE id = $1
         "#,id )
@@ -76,7 +76,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
         let row: Option<PaymentRow> = query_as!(PaymentRow, r#"
         SELECT
         id, merchant_id, amount, currency, description, reference, status, payment_method, 
-           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, paid_at, updated_at
+           payment_provider, provider_reference, failure_reason, retry_count, idempotency_key, created_at, paid_at
            FROM payments
            WHERE reference = $1
         "#,reference )
@@ -175,13 +175,13 @@ impl PaymentRepository for PaymentRepositoryImpl {
         SET status = $1,
         provider_reference = $2,
         failure_reason = $3,
-        updated_at = $4
+        paid_at = $4
         WHERE id = $5
         "#,
             row.status,
             row.provider_reference,
             row.failure_reason,
-            row.updated_at,
+            row.paid_at,
             row.id
         )
         .execute(&self.pool)
@@ -198,7 +198,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
         SET status = $1
         WHERE id = $2
         "#,
-            "Deleted",
+            "DELETED",
             id
         )
         .execute(&self.pool)

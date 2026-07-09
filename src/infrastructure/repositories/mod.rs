@@ -1,1 +1,1 @@
-pub mod payment_repository_impl;
+pub mod postgres_payment_repository;

@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::domain::{
+    errors::domain_error::DomainError,
     payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
     shared::money::Money,
 };
@@ -15,13 +16,13 @@ pub struct Payment {
     reference: String,
     status: PaymentStatus,
     payment_method: PaymentMethod,
-    provider: PaymentProvider,
+    provider: Option<PaymentProvider>,
     provider_reference: Option<String>,
     failure_reason: Option<String>,
     retry_count: i16,
     idempotency_key: Option<Uuid>,
-    paid_at: DateTime<Utc>,
-    updated_at: Option<DateTime<Utc>>,
+    created_at: DateTime<Utc>,
+    paid_at: Option<DateTime<Utc>>,
 }
 
 impl Payment {
@@ -33,13 +34,13 @@ impl Payment {
         reference: String,
         status: PaymentStatus,
         payment_method: PaymentMethod,
-        provider: PaymentProvider,
+        provider: Option<PaymentProvider>,
         provider_reference: Option<String>,
         failure_reason: Option<String>,
         retry_count: i16,
         idempotency_key: Option<Uuid>,
-        paid_at: DateTime<Utc>,
-        updated_at: Option<DateTime<Utc>>,
+        created_at: DateTime<Utc>,
+        paid_at: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             id,
@@ -54,9 +55,47 @@ impl Payment {
             failure_reason,
             retry_count,
             idempotency_key,
+            created_at,
             paid_at,
-            updated_at,
         }
+    }
+    pub fn generate_payment(
+        merchant_id: Uuid,
+        amount: Money,
+        description: Option<String>,
+        payment_method: PaymentMethod,
+    ) -> Result<Self, DomainError> {
+        let mut errors = Vec::new();
+
+        if merchant_id.is_nil() {
+            errors.push("Merchant id must not be empty".to_string());
+        }
+        if !errors.is_empty() {
+            return Err(DomainError::ValidationError(errors));
+        }
+
+        let now = Utc::now();
+        Ok(Self {
+            id: Uuid::new_v4(),
+            merchant_id,
+            amount,
+            description,
+            status: PaymentStatus::Created,
+            reference: Self::generate_reference_number(),
+            payment_method,
+            provider: None,
+            provider_reference: None,
+            failure_reason: None,
+            retry_count: 0,
+            idempotency_key: None,
+            created_at: now,
+            paid_at: None,
+        })
+    }
+
+    fn generate_reference_number() -> String {
+        let id = Uuid::new_v4().to_string().replace("-", "");
+        format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
     pub fn id(&self) -> Uuid {
         self.id
@@ -79,7 +118,7 @@ impl Payment {
     pub fn payment_method(&self) -> PaymentMethod {
         self.payment_method.clone()
     }
-    pub fn provider(&self) -> PaymentProvider {
+    pub fn provider(&self) -> Option<PaymentProvider> {
         self.provider.clone()
     }
     pub fn provider_reference(&self) -> Option<String> {
@@ -94,10 +133,24 @@ impl Payment {
     pub fn idempotency_key(&self) -> Option<Uuid> {
         self.idempotency_key
     }
-    pub fn paid_at(&self) -> DateTime<Utc> {
+    pub fn created_at(&self) -> DateTime<Utc> {
+        self.created_at
+    }
+    pub fn paid_at(&self) -> Option<DateTime<Utc>> {
         self.paid_at
     }
-    pub fn updated_at(&self) -> Option<DateTime<Utc>> {
-        self.updated_at
+
+    pub fn set_status(&mut self, status: PaymentStatus) {
+        self.status = status
+    }
+    pub fn set_provider_reference(&mut self, provider_reference: Option<String>) {
+        self.provider_reference = provider_reference
+    }
+    pub fn set_failure_reason(&mut self, failure_reason: Option<String>) {
+        self.failure_reason = failure_reason
+    }
+
+    pub fn set_paid_at(&mut self, paid_at: Option<DateTime<Utc>>) {
+        self.paid_at = paid_at
     }
 }

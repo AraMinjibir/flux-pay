@@ -12,7 +12,7 @@ CREATE TABLE payments (
 
     status VARCHAR(20) NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
-    payment_provider VARCHAR(50) NOT NULL,
+    payment_provider VARCHAR(50),
 
     provider_reference VARCHAR(255),
 
@@ -21,8 +21,8 @@ CREATE TABLE payments (
 
     idempotency_key UUID  UNIQUE,
 
-    paid_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ
+    created_at TIMESTAMPTZ NOT NULL,
+    paid_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_payments_merchant_id
@@ -31,11 +31,11 @@ ON payments (merchant_id);
 CREATE INDEX idx_payments_status
 ON payments (status);
 
-CREATE INDEX idx_payments_paid_at
-ON payments (paid_at);
+CREATE INDEX idx_payments_created_at
+ON payments (created_at);
 
 CREATE INDEX idx_payments_provider
 ON payments (payment_provider);
 
-CREATE INDEX idx_payments_merchant_paid_at
-ON payments (merchant_id, paid_at DESC);
+CREATE INDEX idx_payments_merchant_created_at
+ON payments (merchant_id, created_at DESC);
