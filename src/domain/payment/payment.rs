@@ -26,16 +26,15 @@ pub struct Payment {
 }
 
 #[derive(Debug, Clone)]
-pub struct PaymentInitializationRequest{
-     email: String,
-     amount: i64,
-     currency: String,
-     reference: String,
-     callback_url: String,
-     provider_reference: Option<String>,
-
+pub struct PaymentInitializationRequest {
+    email: String,
+    amount: i64,
+    currency: String,
+    reference: String,
+    callback_url: String,
+    provider_reference: Option<String>,
 }
-impl PaymentInitializationRequest{
+impl PaymentInitializationRequest {
     pub fn email(&self) -> String {
         self.email.clone()
     }
@@ -131,7 +130,7 @@ impl Payment {
         })
     }
 
-   pub fn generate_reference_number() -> String {
+    pub fn generate_reference_number() -> String {
         let id = Uuid::new_v4().to_string().replace("-", "");
         format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
