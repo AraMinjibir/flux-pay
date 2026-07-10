@@ -64,7 +64,7 @@ async fn should_find_all_payments() {
 
     for _ in 0..5 {
         let payment = test_payment();
-     ctx.repository.save(&payment).await.unwrap();
+        ctx.repository.save(&payment).await.unwrap();
     }
 
     let payments = ctx.repository.find_all().await.unwrap();
