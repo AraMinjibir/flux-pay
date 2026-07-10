@@ -8,5 +8,5 @@ pub enum PaymentStatus {
     Processing,
     Success,
     Failed,
-    Deleted
+    Deleted,
 }

@@ -25,6 +25,43 @@ pub struct Payment {
     paid_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Debug, Clone)]
+pub struct PaymentInitializationRequest {
+    email: String,
+    amount: i64,
+    currency: String,
+    reference: String,
+    callback_url: String,
+    provider_reference: Option<String>,
+}
+impl PaymentInitializationRequest {
+    pub fn email(&self) -> String {
+        self.email.clone()
+    }
+    pub fn amount(&self) -> i64 {
+        self.amount
+    }
+    pub fn currency(&self) -> String {
+        self.currency.clone()
+    }
+    pub fn reference(&self) -> String {
+        self.reference.clone()
+    }
+    pub fn callback_url(&self) -> String {
+        self.callback_url.clone()
+    }
+    pub fn provider_reference(&self) -> Option<String> {
+        self.provider_reference.clone()
+    }
+}
+#[derive(Debug, Clone)]
+pub struct PaymentInitializationResult {
+    pub provider_reference: String,
+    pub authorization_url: Option<String>,
+    pub client_secret: Option<String>,
+    pub status: PaymentStatus,
+}
+
 impl Payment {
     pub fn new(
         id: Uuid,
@@ -93,7 +130,7 @@ impl Payment {
         })
     }
 
-    fn generate_reference_number() -> String {
+    pub fn generate_reference_number() -> String {
         let id = Uuid::new_v4().to_string().replace("-", "");
         format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
