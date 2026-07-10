@@ -4,7 +4,7 @@ use std::fmt;
 pub enum DomainError {
     InvalidAmount,
     ValidationError(Vec<String>),
-    ReqwestError(String)
+    ReqwestError(String),
 }
 
 impl fmt::Display for DomainError {
@@ -24,7 +24,7 @@ impl fmt::Display for DomainError {
 }
 
 impl From<reqwest::Error> for DomainError {
-    fn from(error:reqwest::Error) -> Self {
+    fn from(error: reqwest::Error) -> Self {
         DomainError::ReqwestError(error.to_string())
     }
 }
