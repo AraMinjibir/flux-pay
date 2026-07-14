@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::domain::{
     errors::domain_error::DomainError,
-    ochestration::capability::ProviderCapabilities,
+    orchestration::capability::ProviderCapabilities,
     payment::{
         payment::{PaymentInitializationRequest, PaymentInitializationResult},
         provider::PaymentProvider,

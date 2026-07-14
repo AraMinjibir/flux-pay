@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::domain::{
-    errors::domain_error::DomainError, ochestration::gateway::PaymentGateway,
+    errors::domain_error::DomainError, orchestration::gateway::PaymentGateway,
     payment::provider::PaymentProvider,
 };
 

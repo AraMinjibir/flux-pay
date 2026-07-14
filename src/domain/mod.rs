@@ -1,4 +1,4 @@
 pub mod errors;
-pub mod ochestration;
+pub mod orchestration;
 pub mod payment;
 pub mod shared;
