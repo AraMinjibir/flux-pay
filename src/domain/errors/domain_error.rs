@@ -1,10 +1,25 @@
 use std::fmt;
 
+use crate::domain::payment::provider::PaymentProvider;
+
 #[derive(Debug)]
 pub enum DomainError {
     InvalidAmount,
     ValidationError(Vec<String>),
+
     ReqwestError(String),
+
+    ProviderUnavailable,
+    ProviderNotFound(PaymentProvider),
+    NoProviderAvailable,
+
+    UnsupportedCurrency,
+}
+
+impl DomainError {
+    pub fn is_retryable(&self) -> bool {
+        matches!(self, DomainError::ReqwestError(_))
+    }
 }
 
 impl fmt::Display for DomainError {
@@ -18,6 +33,20 @@ impl fmt::Display for DomainError {
             }
             DomainError::ReqwestError(msg) => {
                 write!(f, "Request error: {}", msg)
+            }
+            DomainError::ProviderUnavailable => {
+                write!(f, "Provider is not available")
+            }
+
+            DomainError::ProviderNotFound(causes) => {
+                write!(f, "Provider not found: {}", causes)
+            }
+            DomainError::NoProviderAvailable => {
+                write!(f, "There is no available provider")
+            }
+
+            DomainError::UnsupportedCurrency => {
+                write!(f, "The currency provided is Unsupported")
             }
         }
     }

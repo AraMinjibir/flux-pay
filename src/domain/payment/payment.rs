@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::domain::{
     errors::domain_error::DomainError,
     payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
-    shared::money::Money,
+    shared::{currency::Currency, money::Money},
 };
 
 #[derive(Debug, Clone)]
@@ -29,7 +29,7 @@ pub struct Payment {
 pub struct PaymentInitializationRequest {
     email: String,
     amount: i64,
-    currency: String,
+    currency: Currency,
     reference: String,
     callback_url: String,
     provider_reference: Option<String>,
@@ -41,7 +41,7 @@ impl PaymentInitializationRequest {
     pub fn amount(&self) -> i64 {
         self.amount
     }
-    pub fn currency(&self) -> String {
+    pub fn currency(&self) -> Currency {
         self.currency.clone()
     }
     pub fn reference(&self) -> String {
@@ -189,5 +189,11 @@ impl Payment {
 
     pub fn set_paid_at(&mut self, paid_at: Option<DateTime<Utc>>) {
         self.paid_at = paid_at
+    }
+    pub fn set__selected_provider(&mut self, provider: Option<PaymentProvider>) {
+        self.provider = provider
+    }
+    pub fn set_retry_count(&mut self, retry_count: i16) {
+        self.retry_count = retry_count
     }
 }
