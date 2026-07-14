@@ -13,7 +13,7 @@ pub enum DomainError {
     ProviderNotFound(PaymentProvider),
     NoProviderAvailable,
 
-    UnsupportedCurrency
+    UnsupportedCurrency,
 }
 
 impl DomainError {
@@ -21,7 +21,6 @@ impl DomainError {
         matches!(self, DomainError::ReqwestError(_))
     }
 }
-
 
 impl fmt::Display for DomainError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -35,21 +34,20 @@ impl fmt::Display for DomainError {
             DomainError::ReqwestError(msg) => {
                 write!(f, "Request error: {}", msg)
             }
-            DomainError:: ProviderUnavailable => {
+            DomainError::ProviderUnavailable => {
                 write!(f, "Provider is not available")
             }
 
             DomainError::ProviderNotFound(causes) => {
                 write!(f, "Provider not found: {}", causes)
             }
-            DomainError:: NoProviderAvailable => {
+            DomainError::NoProviderAvailable => {
                 write!(f, "There is no available provider")
             }
 
-            DomainError:: UnsupportedCurrency => {
+            DomainError::UnsupportedCurrency => {
                 write!(f, "The currency provided is Unsupported")
             }
-        
         }
     }
 }
