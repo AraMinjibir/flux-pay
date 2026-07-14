@@ -2,7 +2,9 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::domain::{
-    errors::domain_error::DomainError, payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus}, shared::{currency::Currency, money::Money},
+    errors::domain_error::DomainError,
+    payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
+    shared::{currency::Currency, money::Money},
 };
 
 #[derive(Debug, Clone)]
