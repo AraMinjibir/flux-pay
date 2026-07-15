@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::domain::{
     errors::domain_error::DomainError,
-    payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
+    payment::{self, method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
     shared::{currency::Currency, money::Money},
 };
 
@@ -134,6 +134,17 @@ impl Payment {
         let id = Uuid::new_v4().to_string().replace("-", "");
         format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
+
+    pub fn mark_processing(&mut self) -> Result<(), DomainError> {
+        PaymentStatus::transition(&mut self.status, PaymentStatus::Processing)
+    }
+    pub fn mark_success(&mut self) -> Result<(), DomainError> {
+        PaymentStatus::transition(&mut self.status, PaymentStatus::Success)
+    }
+    pub fn mark_failed(&mut self) -> Result<(), DomainError> {
+        PaymentStatus::transition(&mut self.status, PaymentStatus::Failed)
+    }
+
     pub fn id(&self) -> Uuid {
         self.id
     }

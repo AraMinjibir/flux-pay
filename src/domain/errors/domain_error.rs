@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::domain::payment::provider::PaymentProvider;
+use crate::domain::payment::{provider::PaymentProvider, status::PaymentStatus};
 
 #[derive(Debug)]
 pub enum DomainError {
@@ -14,6 +14,11 @@ pub enum DomainError {
     NoProviderAvailable,
 
     UnsupportedCurrency,
+
+    InvalidPaymentStatusTransition {
+        from: PaymentStatus,
+        to: PaymentStatus,
+    },
 }
 
 impl DomainError {
@@ -47,6 +52,13 @@ impl fmt::Display for DomainError {
 
             DomainError::UnsupportedCurrency => {
                 write!(f, "The currency provided is Unsupported")
+            }
+            DomainError::InvalidPaymentStatusTransition { from, to } => {
+                write!(
+                    f,
+                    "Invalid payment status transition from {} to {}",
+                    from, to
+                )
             }
         }
     }
