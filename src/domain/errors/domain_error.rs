@@ -1,4 +1,3 @@
-use redis::RedisError;
 use std::fmt;
 
 use crate::domain::payment::{provider::PaymentProvider, status::PaymentStatus};
