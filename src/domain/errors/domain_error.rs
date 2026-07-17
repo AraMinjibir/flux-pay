@@ -8,6 +8,7 @@ pub enum DomainError {
     ValidationError(Vec<String>),
 
     ReqwestError(String),
+    RedisError(String),
 
     ProviderUnavailable,
     ProviderNotFound(PaymentProvider),
@@ -19,6 +20,8 @@ pub enum DomainError {
         from: PaymentStatus,
         to: PaymentStatus,
     },
+
+    DatabaseError(String),
 }
 
 impl DomainError {
@@ -38,6 +41,9 @@ impl fmt::Display for DomainError {
             }
             DomainError::ReqwestError(msg) => {
                 write!(f, "Request error: {}", msg)
+            }
+            DomainError::RedisError(msg) => {
+                write!(f, "Redis error: {}", msg)
             }
             DomainError::ProviderUnavailable => {
                 write!(f, "Provider is not available")
@@ -60,6 +66,9 @@ impl fmt::Display for DomainError {
                     from, to
                 )
             }
+            DomainError::DatabaseError(msg) => {
+                write!(f, "Database error: {}", msg)
+            }
         }
     }
 }
@@ -67,5 +76,15 @@ impl fmt::Display for DomainError {
 impl From<reqwest::Error> for DomainError {
     fn from(error: reqwest::Error) -> Self {
         DomainError::ReqwestError(error.to_string())
+    }
+}
+impl From<redis::RedisError> for DomainError {
+    fn from(error: redis::RedisError) -> Self {
+        DomainError::RedisError(error.to_string())
+    }
+}
+impl From<serde_json::Error> for DomainError {
+    fn from(err: serde_json::Error) -> Self {
+        DomainError::DatabaseError(err.to_string())
     }
 }
