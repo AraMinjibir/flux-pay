@@ -10,7 +10,7 @@ pub enum ReservationResult {
     Completed(StoredResponse),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct StoredResponse {
     pub payment_id: Uuid,
     pub status: PaymentStatus,
