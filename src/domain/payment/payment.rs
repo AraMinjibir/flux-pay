@@ -1,10 +1,10 @@
 use chrono::{DateTime, Utc};
-use serde::{Deserialize};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::domain::{
     errors::domain_error::DomainError,
-    payment::{ method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
+    payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
     shared::{currency::Currency, money::Money},
 };
 
