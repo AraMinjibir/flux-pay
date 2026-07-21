@@ -1,6 +1,12 @@
 use std::fmt;
 
-use crate::{application::payment_orchestrator::{OrchestrationFailureMetadata}, domain::{errors::repository_error::RepositoryError, payment::{provider::PaymentProvider, status::PaymentStatus}}};
+use crate::{
+    application::payment_orchestrator::OrchestrationFailureMetadata,
+    domain::{
+        errors::repository_error::RepositoryError,
+        payment::{provider::PaymentProvider, status::PaymentStatus},
+    },
+};
 
 #[derive(Debug)]
 pub enum DomainError {
@@ -17,7 +23,7 @@ pub enum DomainError {
         error: Box<DomainError>,
         metadata: OrchestrationFailureMetadata,
     },
-    
+
     UnsupportedCurrency,
     RequestInProgress,
     InvalidStoredResponse,
@@ -41,7 +47,7 @@ pub enum DomainError {
     DeadlockDetected,
     TransactionTimeout,
     SerializationFailure,
-    Internal(String)
+    Internal(String),
 }
 
 impl DomainError {
@@ -87,7 +93,10 @@ impl fmt::Display for DomainError {
                 )
             }
             DomainError::RequestInProgress => {
-                write!(f, "This request is already received and currently Processing")
+                write!(
+                    f,
+                    "This request is already received and currently Processing"
+                )
             }
             DomainError::InvalidStoredResponse => {
                 write!(f, "Invalid stored response")
@@ -151,7 +160,6 @@ impl fmt::Display for DomainError {
             DomainError::PaymentProviderFailed { error, .. } => {
                 write!(f, "Payment provider failed: {error}")
             }
-
         }
     }
 }
