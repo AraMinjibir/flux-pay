@@ -55,26 +55,26 @@ impl PaymentOrchestrator {
         let routing_request = RoutingRequest {
             currency: request.currency.clone(),
         };
-    
+
         let providers = self.routing_strategy.select(&routing_request);
-    
+
         if providers.is_empty() {
             return Err(DomainError::NoProviderAvailable);
         }
-    
+
         let mut retry_count = 0;
         let mut last_error = None;
         let mut attempted_providers = Vec::new();
-    
+
         for provider in &providers {
             // Record the attempted providers
             attempted_providers.push(provider.clone());
-    
+
             let gateway = self
                 .registry
                 .get(provider)
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
-    
+
             for attempt in 1..=Self::MAX_RETRIES {
                 match gateway.initialize_payment(request).await {
                     Ok(initialization) => {
@@ -87,31 +87,29 @@ impl PaymentOrchestrator {
                             },
                         });
                     }
-    
+
                     Err(error) => {
                         let retryable = error.is_retryable();
-    
+
                         last_error = Some(error);
-    
+
                         // Retry this provider if possible.
                         if retryable && attempt < Self::MAX_RETRIES {
                             retry_count += 1;
-    
+
                             tokio::time::sleep(Self::RETRY_DELAY).await;
                             continue;
                         }
-    
+
                         // Move to the next provider.
                         break;
                     }
                 }
             }
         }
-    
+
         Err(DomainError::PaymentProviderFailed {
-            error: Box::new(
-                last_error.unwrap_or(DomainError::NoProviderAvailable),
-            ),
+            error: Box::new(last_error.unwrap_or(DomainError::NoProviderAvailable)),
             metadata: OrchestrationFailureMetadata {
                 retry_count,
                 attempted_providers,
