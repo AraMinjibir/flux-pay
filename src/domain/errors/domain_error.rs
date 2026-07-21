@@ -1,5 +1,7 @@
 use std::fmt;
 
+use uuid::Uuid;
+
 use crate::{
     application::payment_orchestrator::OrchestrationFailureMetadata,
     domain::{
@@ -32,6 +34,8 @@ pub enum DomainError {
         from: PaymentStatus,
         to: PaymentStatus,
     },
+    PaymentNotFound(Uuid),
+    PaymentWithRefNotFound(String),
 
     DatabaseError(String),
     DuplicateEntity,
@@ -70,6 +74,12 @@ impl fmt::Display for DomainError {
             }
             DomainError::RedisError(msg) => {
                 write!(f, "Redis error: {}", msg)
+            }
+            DomainError::PaymentNotFound(id) => {
+                write!(f, "Payment with id:{}, not found", id)
+            }
+            DomainError::PaymentWithRefNotFound(reference) => {
+                write!(f, "Payment with reference number: {}, not found", reference)
             }
             DomainError::ProviderUnavailable => {
                 write!(f, "Provider is not available")
