@@ -11,8 +11,8 @@ pub struct StripePaymentIntentRequest {
 impl From<&PaymentInitializationRequest> for StripePaymentIntentRequest {
     fn from(request: &PaymentInitializationRequest) -> Self {
         Self {
-            amount: request.amount(),
-            currency: request.currency().to_string().to_lowercase(),
+            amount: request.amount,
+            currency: request.currency.to_string().to_lowercase(),
         }
     }
 }

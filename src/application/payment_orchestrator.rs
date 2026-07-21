@@ -13,20 +13,27 @@ use crate::{
     },
     infrastructure::orchestration::provider_registry::ProviderRegistry,
 };
-
 pub struct PaymentOrchestrator {
     registry: Arc<ProviderRegistry>,
     routing_strategy: Arc<dyn RoutingStrategy>,
 }
+#[derive(Debug, Clone)]
 pub struct OrchestrationMetadata {
     pub selected_provider: PaymentProvider,
-    pub retry_count: u32,
+    pub retry_count: i16,
     pub attempted_providers: Vec<PaymentProvider>,
 }
+#[derive(Debug, Clone)]
+pub struct OrchestrationFailureMetadata {
+    pub retry_count: i16,
+    pub attempted_providers: Vec<PaymentProvider>,
+}
+#[derive(Debug, Clone)]
 pub struct OrchestrationResult {
     pub initialization: PaymentInitializationResult,
     pub metadata: OrchestrationMetadata,
 }
+
 impl PaymentOrchestrator {
     const MAX_RETRIES: u8 = 3;
     const RETRY_DELAY: Duration = Duration::from_millis(200);
@@ -46,7 +53,7 @@ impl PaymentOrchestrator {
         request: &PaymentInitializationRequest,
     ) -> Result<OrchestrationResult, DomainError> {
         let routing_request = RoutingRequest {
-            currency: request.currency().clone(),
+            currency: request.currency.clone(),
         };
 
         let providers = self.routing_strategy.select(&routing_request);
@@ -59,14 +66,14 @@ impl PaymentOrchestrator {
         let mut last_error = None;
         let mut attempted_providers = Vec::new();
 
-        for provider in providers {
-            // Record the  attempted providers.
+        for provider in &providers {
+            // Record the attempted providers
             attempted_providers.push(provider.clone());
 
             let gateway = self
                 .registry
-                .get(&provider)
-                .ok_or(DomainError::ProviderNotFound(provider.clone()))?;
+                .get(provider)
+                .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
 
             for attempt in 1..=Self::MAX_RETRIES {
                 match gateway.initialize_payment(request).await {
@@ -101,6 +108,12 @@ impl PaymentOrchestrator {
             }
         }
 
-        Err(last_error.unwrap_or(DomainError::NoProviderAvailable))
+        Err(DomainError::PaymentProviderFailed {
+            error: Box::new(last_error.unwrap_or(DomainError::NoProviderAvailable)),
+            metadata: OrchestrationFailureMetadata {
+                retry_count,
+                attempted_providers,
+            },
+        })
     }
 }

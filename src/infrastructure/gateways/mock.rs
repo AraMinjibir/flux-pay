@@ -53,11 +53,14 @@ impl PaymentGateway for MockPaymentGateway {
         &self,
         payment: &PaymentInitializationRequest,
     ) -> Result<PaymentInitializationResult, DomainError> {
-        let fake_url = format!("{}/pay/{}", self.config.base_url, payment.reference());
+        let fake_url = format!("{}/pay/{}", self.config.base_url, payment.reference);
 
         Ok(PaymentInitializationResult {
             authorization_url: Some(fake_url),
-            provider_reference: payment.provider_reference().expect("No provider reference"),
+            provider_reference: payment
+                .provider_reference
+                .clone()
+                .expect("No provider reference"),
             status: PaymentStatus::Processing,
             client_secret: None,
         })

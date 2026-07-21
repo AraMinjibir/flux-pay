@@ -9,7 +9,7 @@ use crate::domain::{
 };
 
 #[async_trait]
-pub trait PaymentRepository {
+pub trait PaymentRepository: Send + Sync {
     async fn save(&self, payment: &Payment) -> Result<(), RepositoryError>;
 
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Payment>, RepositoryError>;
@@ -21,10 +21,11 @@ pub trait PaymentRepository {
 
     async fn find_by_provider(
         &self,
-        provider: PaymentProvider,
+        provider: &PaymentProvider,
     ) -> Result<Vec<Payment>, RepositoryError>;
 
-    async fn find_by_method(&self, method: PaymentMethod) -> Result<Vec<Payment>, RepositoryError>;
+    async fn find_by_method(&self, method: &PaymentMethod)
+    -> Result<Vec<Payment>, RepositoryError>;
 
     async fn find_by_merchant(&self, merchant_id: Uuid) -> Result<Vec<Payment>, RepositoryError>;
 

@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::domain::{
     errors::domain_error::DomainError,
-    payment::{self, method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
+    payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
     shared::{currency::Currency, money::Money},
 };
 
@@ -27,41 +28,43 @@ pub struct Payment {
 
 #[derive(Debug, Clone)]
 pub struct PaymentInitializationRequest {
-    email: String,
-    amount: i64,
-    currency: Currency,
-    reference: String,
-    callback_url: String,
-    provider_reference: Option<String>,
+    pub email: Option<String>,
+    pub amount: i64,
+    pub currency: Currency,
+    pub reference: String,
+    pub callback_url: Option<String>,
+    pub provider_reference: Option<String>,
 }
-impl PaymentInitializationRequest {
-    pub fn email(&self) -> String {
-        self.email.clone()
-    }
-    pub fn amount(&self) -> i64 {
-        self.amount
-    }
-    pub fn currency(&self) -> Currency {
-        self.currency.clone()
-    }
-    pub fn reference(&self) -> String {
-        self.reference.clone()
-    }
-    pub fn callback_url(&self) -> String {
-        self.callback_url.clone()
-    }
-    pub fn provider_reference(&self) -> Option<String> {
-        self.provider_reference.clone()
-    }
-}
-#[derive(Debug, Clone)]
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct PaymentInitializationResult {
     pub provider_reference: String,
     pub authorization_url: Option<String>,
     pub client_secret: Option<String>,
     pub status: PaymentStatus,
 }
+#[derive(Debug, Clone)]
+pub struct CreatePaymentCommand {
+    pub merchant_id: Uuid,
+    pub amount: Money,
+    pub currency: Currency,
+    pub description: Option<String>,
+    pub payment_method: PaymentMethod,
+    pub idempotency_key: Uuid,
+}
 
+impl PaymentInitializationRequest {
+    pub fn converted_request(payment: &Payment) -> Self {
+        Self {
+            email: None,
+            amount: payment.amount().amount(),
+            currency: payment.amount().currency(),
+            reference: payment.reference(),
+            callback_url: None,
+            provider_reference: payment.provider_reference(),
+        }
+    }
+}
 impl Payment {
     pub fn new(
         id: Uuid,
@@ -201,7 +204,7 @@ impl Payment {
     pub fn set_paid_at(&mut self, paid_at: Option<DateTime<Utc>>) {
         self.paid_at = paid_at
     }
-    pub fn set__selected_provider(&mut self, provider: Option<PaymentProvider>) {
+    pub fn set_selected_provider(&mut self, provider: Option<PaymentProvider>) {
         self.provider = provider
     }
     pub fn set_retry_count(&mut self, retry_count: i16) {
