@@ -31,10 +31,7 @@ pub enum IdempotencyStatus {
 }
 
 impl StoredResponse {
-    pub fn from_payment(
-        payment_id: Uuid,
-        response: &PaymentInitializationResult,
-    ) -> Self {
+    pub fn from_payment(payment_id: Uuid, response: &PaymentInitializationResult) -> Self {
         Self {
             payment_id,
             provider_reference: response.provider_reference.clone(),
