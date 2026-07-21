@@ -63,6 +63,9 @@ async fn should_return_completed_response_after_completion() {
 
     let response = StoredResponse {
         payment_id: Uuid::new_v4(),
+        provider_reference: "provider-reference".to_string(),
+        authorization_url: None,
+        client_secret: None,
         status: PaymentStatus::Success,
     };
 
