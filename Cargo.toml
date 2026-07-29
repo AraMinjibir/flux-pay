@@ -25,3 +25,4 @@ async-trait = "0.1"
 dotenvy = "0.15"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 redis = { version = "0.32", features = ["tokio-comp"] }
+mockall = "0.12"
