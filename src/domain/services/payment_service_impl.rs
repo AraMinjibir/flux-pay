@@ -22,7 +22,19 @@ pub struct PaymentServiceImpl {
     idempotency_service: Arc<dyn IdempotencyService>,
     payment_orchestrator: Arc<PaymentOrchestrator>,
 }
-
+impl PaymentServiceImpl {
+    pub fn new(
+        payment_repository: Arc<dyn PaymentRepository>,
+        idempotency_service: Arc<dyn IdempotencyService>,
+        payment_orchestrator: Arc<PaymentOrchestrator>,
+    ) -> Self {
+        Self {
+            payment_repository,
+            idempotency_service,
+            payment_orchestrator,
+        }
+    }
+}
 #[async_trait]
 impl PaymentService for PaymentServiceImpl {
     async fn generate_payment(
