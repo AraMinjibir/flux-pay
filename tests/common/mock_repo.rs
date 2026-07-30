@@ -3,11 +3,21 @@ use mockall::mock;
 use uuid::Uuid;
 
 use flux_pay::domain::{
-    errors::{domain_error::DomainError, repository_error::RepositoryError}, idempotency::models::{ReservationResult, StoredResponse}, orchestration::{capability::ProviderCapabilities, gateway::PaymentGateway, routing_request::RoutingRequest, routing_strategy::RoutingStrategy}, payment::{
-        method::PaymentMethod, payment::{Payment, PaymentInitializationRequest, PaymentInitializationResult}, provider::PaymentProvider, repository::PaymentRepository, status::PaymentStatus,
-    }, services::idempotency_service::IdempotencyService,
+    errors::{domain_error::DomainError, repository_error::RepositoryError},
+    idempotency::models::{ReservationResult, StoredResponse},
+    orchestration::{
+        capability::ProviderCapabilities, gateway::PaymentGateway, routing_request::RoutingRequest,
+        routing_strategy::RoutingStrategy,
+    },
+    payment::{
+        method::PaymentMethod,
+        payment::{Payment, PaymentInitializationRequest, PaymentInitializationResult},
+        provider::PaymentProvider,
+        repository::PaymentRepository,
+        status::PaymentStatus,
+    },
+    services::idempotency_service::IdempotencyService,
 };
-
 
 mock! {
     pub  PaymentRepo {}
@@ -61,7 +71,7 @@ mock! {
     impl RoutingStrategy for Routing {
 
         fn select(&self, request: &RoutingRequest) -> Vec<PaymentProvider>;
-        
+
     }
 }
 
