@@ -108,7 +108,7 @@ impl PaymentRepository for PostgresPaymentRepository {
 
     async fn find_by_provider(
         &self,
-        provider: PaymentProvider,
+        provider: &PaymentProvider,
     ) -> Result<Vec<Payment>, RepositoryError> {
         let rows: Vec<PaymentRow> = sqlx::query_as!(
             PaymentRow,
@@ -125,7 +125,10 @@ impl PaymentRepository for PostgresPaymentRepository {
         Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
     }
 
-    async fn find_by_method(&self, method: PaymentMethod) -> Result<Vec<Payment>, RepositoryError> {
+    async fn find_by_method(
+        &self,
+        method: &PaymentMethod,
+    ) -> Result<Vec<Payment>, RepositoryError> {
         let rows: Vec<PaymentRow> = sqlx::query_as!(
             PaymentRow,
             r#"
