@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::domain::{errors::domain_error::DomainError, shared::currency::Currency};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Money {
     amount: i64,
     currency: Currency,
