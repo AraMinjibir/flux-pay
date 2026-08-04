@@ -128,6 +128,12 @@ async fn generate_payment_succeeds_when_reserved() {
                 authorization_url: Some("https://pay.flux".to_string()),
                 client_secret: Some("secret".to_string()),
                 status: PaymentStatus::Created,
+                amount: None,
+                created_at: None,
+                id: None,
+                merchant_id: None,
+                reference: None,
+                description: None,
             })
         });
 
@@ -272,6 +278,12 @@ async fn generate_payment_retries_and_succeeds() {
                 authorization_url: Some("https://pay.flux".to_string()),
                 client_secret: Some("secret".to_string()),
                 status: PaymentStatus::Created,
+                amount: None,
+                created_at: None,
+                id: None,
+                merchant_id: None,
+                reference: None,
+                description: None,
             })
         });
 

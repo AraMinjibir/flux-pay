@@ -39,7 +39,6 @@ impl TestContext {
 
         CreatePaymentCommand {
             amount: payment.amount(),
-            currency: payment.amount().currency(),
             merchant_id: payment.merchant_id(),
             description: payment.description(),
             payment_method: payment.payment_method(),

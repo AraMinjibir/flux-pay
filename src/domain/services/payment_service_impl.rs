@@ -50,10 +50,16 @@ impl PaymentService for PaymentServiceImpl {
         match operation {
             ReservationResult::Completed(response) => {
                 return Ok(PaymentInitializationResult {
+                    id: None,
+                    merchant_id: None,
+                    amount: None,
+                    description: None,
+                    reference: None,
                     provider_reference: response.provider_reference,
                     authorization_url: response.authorization_url,
                     client_secret: response.client_secret,
                     status: response.status,
+                    created_at: None
                 });
             }
 

@@ -16,6 +16,12 @@ impl From<InterswitchInitializeResponse> for PaymentInitializationResult {
             status: response.status,
             provider_reference: response.reference,
             client_secret: None,
+            amount: None,
+            created_at: None,
+            id: None,
+            merchant_id: None,
+            reference: None,
+            description: None
         }
     }
 }

@@ -23,6 +23,12 @@ impl From<PaystackInitializeResponse> for PaymentInitializationResult {
             authorization_url: Some(response.data.authorization_url),
             status: response.status,
             client_secret: None,
+            amount: None,
+            created_at: None,
+            id: None,
+            merchant_id: None,
+            reference: None,
+            description: None
         }
     }
 }

@@ -16,6 +16,12 @@ impl From<StripePaymentIntentResponse> for PaymentInitializationResult {
             client_secret: Some(response.client_secret),
             status: response.status,
             authorization_url: None,
+            amount: None,
+            created_at: None,
+            id: None,
+            merchant_id: None,
+            reference: None,
+            description: None
         }
     }
 }

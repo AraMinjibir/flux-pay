@@ -63,6 +63,12 @@ impl PaymentGateway for MockPaymentGateway {
                 .expect("No provider reference"),
             status: PaymentStatus::Processing,
             client_secret: None,
+            amount: None,
+            created_at: None,
+            id: None,
+            merchant_id: None,
+            reference: None,
+            description: None
         })
     }
 }

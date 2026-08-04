@@ -38,16 +38,21 @@ pub struct PaymentInitializationRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct PaymentInitializationResult {
+    pub id: Option<Uuid>,
+    pub merchant_id: Option<Uuid>,
+    pub amount: Option<Money>,
+    pub description: Option<String>,
+    pub reference: Option<String>,
+    pub status: PaymentStatus,
     pub provider_reference: String,
     pub authorization_url: Option<String>,
     pub client_secret: Option<String>,
-    pub status: PaymentStatus,
+    pub created_at: Option<DateTime<Utc>>
 }
 #[derive(Debug, Clone)]
 pub struct CreatePaymentCommand {
     pub merchant_id: Uuid,
     pub amount: Money,
-    pub currency: Currency,
     pub description: Option<String>,
     pub payment_method: PaymentMethod,
     pub idempotency_key: Uuid,
