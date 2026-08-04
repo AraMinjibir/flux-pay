@@ -4,25 +4,48 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+# Web framework
 actix-web = "4.9.0"
 tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] }
 
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1", features = ["v4", "serde"] }
+# Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-sqlx = { version = "0.8.x", features = [
+# Time and identifiers
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Database
+sqlx = { version = "0.8", features = [
     "runtime-tokio",
     "postgres",
     "macros",
     "uuid",
     "chrono"
 ] }
+
+# Redis
+redis = { version = "0.32", features = ["tokio-comp"] }
+
+# HTTP client
+reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls"
+] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# Traits and enums
+async-trait = "0.1"
 strum = "0.27"
 strum_macros = "0.27"
-async-trait = "0.1"
-dotenvy = "0.15"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
-redis = { version = "0.32", features = ["tokio-comp"] }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Testing
 mockall = "0.12"
