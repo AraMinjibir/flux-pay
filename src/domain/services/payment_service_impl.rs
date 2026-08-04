@@ -59,7 +59,7 @@ impl PaymentService for PaymentServiceImpl {
                     authorization_url: response.authorization_url,
                     client_secret: response.client_secret,
                     status: response.status,
-                    created_at: None
+                    created_at: None,
                 });
             }
 

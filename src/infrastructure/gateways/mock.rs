@@ -68,7 +68,7 @@ impl PaymentGateway for MockPaymentGateway {
             id: None,
             merchant_id: None,
             reference: None,
-            description: None
+            description: None,
         })
     }
 }

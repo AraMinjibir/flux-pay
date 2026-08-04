@@ -47,7 +47,7 @@ pub struct PaymentInitializationResult {
     pub provider_reference: String,
     pub authorization_url: Option<String>,
     pub client_secret: Option<String>,
-    pub created_at: Option<DateTime<Utc>>
+    pub created_at: Option<DateTime<Utc>>,
 }
 #[derive(Debug, Clone)]
 pub struct CreatePaymentCommand {

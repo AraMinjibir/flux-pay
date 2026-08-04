@@ -21,7 +21,7 @@ impl From<InterswitchInitializeResponse> for PaymentInitializationResult {
             id: None,
             merchant_id: None,
             reference: None,
-            description: None
+            description: None,
         }
     }
 }
