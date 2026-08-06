@@ -1,11 +1,16 @@
 mod common;
-use chrono::Utc;
 use flux_pay::{
-    domain::payment::{repository::PaymentRepository, status::PaymentStatus},
+    domain::{
+        errors::domain_error::DomainError,
+        payment::repository::PaymentRepository,
+    },
     infrastructure::repositories::postgres_payment_repository::PostgresPaymentRepository,
 };
 
-use crate::common::{fixtures::test_payment, test_database::TestDb};
+use crate::common::{
+    fixtures::{mock_execution, test_payment},
+    test_database::TestDb,
+};
 
 pub struct TestContex {
     pub db: TestDb,
@@ -75,14 +80,17 @@ async fn should_find_all_payments() {
 async fn should_update_payment() {
     let ctx = TestContex::new().await;
     let mut payment = test_payment();
-    let now = Utc::now();
 
     ctx.repository.save(&payment).await.unwrap();
 
-    payment.set_status(PaymentStatus::Processing);
-    payment.set_provider_reference(Some("provider_reference".to_string()));
-    payment.set_failure_reason(Some("failure_reason".to_string()));
-    payment.set_paid_at(Some(now));
+    let execution = mock_execution();
+
+    payment.apply_initialization(&execution).unwrap();
+    payment.mark_processing().unwrap();
+
+    let error = DomainError::DatabaseError("Connection refused".to_string());
+
+    payment.apply_failure(&error).unwrap();
 
     ctx.repository.update(&payment).await.unwrap();
 
