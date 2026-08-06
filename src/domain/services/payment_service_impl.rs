@@ -42,8 +42,8 @@ impl PaymentService for PaymentServiceImpl {
         &self,
         command: CreatePaymentCommand,
     ) -> Result<PaymentInitializationResult, DomainError> {
-        // 1. Idempotency protection
 
+        // 1. Idempotency protection
         info!("1. Reserving idempotency key...");
         let operation = self
             .idempotency_service
@@ -52,19 +52,7 @@ impl PaymentService for PaymentServiceImpl {
 
         match operation {
             ReservationResult::Completed(response) => {
-                return Ok(PaymentInitializationResult {
-                    id: None,
-                    merchant_id: None,
-                    amount: None,
-                    description: None,
-                    reference: None,
-                    selected_provider: None,
-                    provider_reference: response.provider_reference,
-                    authorization_url: response.authorization_url,
-                    client_secret: response.client_secret,
-                    status: response.status,
-                    created_at: None,
-                });
+                return Ok(PaymentInitializationResult::from_stored_response(response));
             }
 
             ReservationResult::InProgress => {
@@ -73,7 +61,7 @@ impl PaymentService for PaymentServiceImpl {
 
             ReservationResult::Reserved => {}
         }
-
+        
         // 2. Create payment
         let mut payment = Payment::generate_payment(
             command.merchant_id,
@@ -101,19 +89,7 @@ impl PaymentService for PaymentServiceImpl {
             Ok(execution) => execution,
 
             Err(error) => {
-                payment.mark_failed()?;
-
-                match &error {
-                    DomainError::PaymentProviderFailed { error, metadata } => {
-                        payment.set_failure_reason(Some(error.to_string()));
-
-                        payment.set_retry_count(metadata.retry_count);
-                    }
-
-                    _ => {
-                        payment.set_failure_reason(Some(error.to_string()));
-                    }
-                }
+                payment.apply_failure(&error)?;
 
                 info!("Updating payment after orchestration...");
                 self.payment_repository.update(&payment).await?;
@@ -124,31 +100,13 @@ impl PaymentService for PaymentServiceImpl {
         info!("returned orchestrator: {:?}", execution);
 
         // 7. Apply successful orchestration result
-        payment.set_provider_reference(Some(execution.initialization.provider_reference.clone()));
-
-        payment.set_selected_provider(Some(execution.metadata.selected_provider));
-
-        payment.set_retry_count(execution.metadata.retry_count);
+        payment.apply_initialization(&execution)?;
 
         // 8. Persist updated payment
         self.payment_repository.update(&payment).await?;
 
         // 9. Build response directly from orchestration result
-        let initialization = execution.initialization;
-
-        let response = PaymentInitializationResult {
-            id: Some(payment.id()),
-            merchant_id: Some(payment.merchant_id()),
-            amount: Some(payment.amount()),
-            description: payment.description(),
-            reference: Some(payment.reference()),
-            status: payment.status(),
-            created_at: Some(payment.created_at()),
-            provider_reference: initialization.provider_reference.clone(),
-            selected_provider: payment.provider(),
-            authorization_url: initialization.authorization_url.clone(),
-            client_secret: initialization.client_secret.clone(),
-        };
+        let response = payment.to_initialization_result(&execution.initialization);
         info!("Response: {:?}", response);
 
         // 10. Complete idempotency
