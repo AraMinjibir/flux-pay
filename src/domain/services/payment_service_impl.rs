@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::application::payment_orchestrator::PaymentOrchestrator;
@@ -42,6 +43,8 @@ impl PaymentService for PaymentServiceImpl {
         command: CreatePaymentCommand,
     ) -> Result<PaymentInitializationResult, DomainError> {
         // 1. Idempotency protection
+
+        info!("1. Reserving idempotency key...");
         let operation = self
             .idempotency_service
             .reserve(command.idempotency_key.clone())
@@ -55,6 +58,7 @@ impl PaymentService for PaymentServiceImpl {
                     amount: None,
                     description: None,
                     reference: None,
+                    selected_provider: None,
                     provider_reference: response.provider_reference,
                     authorization_url: response.authorization_url,
                     client_secret: response.client_secret,
@@ -73,9 +77,9 @@ impl PaymentService for PaymentServiceImpl {
         // 2. Create payment
         let mut payment = Payment::generate_payment(
             command.merchant_id,
-            command.amount,
-            command.description,
-            command.payment_method,
+            command.amount.clone(),
+            command.description.clone(),
+            command.payment_method.clone(),
         )?;
 
         // 3. Persist initial state
@@ -87,9 +91,12 @@ impl PaymentService for PaymentServiceImpl {
         self.payment_repository.update(&payment).await?;
 
         // 5. Build orchestration request
-        let request = PaymentInitializationRequest::converted_request(&payment);
+        info!("Building request...");
+        let request = PaymentInitializationRequest::converted_request(&command, &payment);
+        info!(" Built request: {:?}", request);
 
         // 6. Execute orchestration
+        info!("Calling orchestrator...");
         let execution = match self.payment_orchestrator.initialize_payment(&request).await {
             Ok(execution) => execution,
 
@@ -108,11 +115,13 @@ impl PaymentService for PaymentServiceImpl {
                     }
                 }
 
+                info!("Updating payment after orchestration...");
                 self.payment_repository.update(&payment).await?;
 
                 return Err(error);
             }
         };
+        info!("returned orchestrator: {:?}", execution);
 
         // 7. Apply successful orchestration result
         payment.set_provider_reference(Some(execution.initialization.provider_reference.clone()));
@@ -125,10 +134,26 @@ impl PaymentService for PaymentServiceImpl {
         self.payment_repository.update(&payment).await?;
 
         // 9. Build response directly from orchestration result
-        let response = execution.initialization;
+        let initialization = execution.initialization;
+
+        let response = PaymentInitializationResult {
+            id: Some(payment.id()),
+            merchant_id: Some(payment.merchant_id()),
+            amount: Some(payment.amount()),
+            description: payment.description(),
+            reference: Some(payment.reference()),
+            status: payment.status(),
+            created_at: Some(payment.created_at()),
+            provider_reference: initialization.provider_reference.clone(),
+            selected_provider: payment.provider(),
+            authorization_url: initialization.authorization_url.clone(),
+            client_secret: initialization.client_secret.clone(),
+        };
+        info!("Response: {:?}", response);
 
         // 10. Complete idempotency
         let stored_response = StoredResponse::from_payment(payment.id(), &response);
+        info!("stored_response: {:?}", stored_response);
 
         self.idempotency_service
             .complete(command.idempotency_key, stored_response)
