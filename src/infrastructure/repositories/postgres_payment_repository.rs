@@ -174,16 +174,21 @@ impl PaymentRepository for PostgresPaymentRepository {
         let row = PaymentRow::from_domain(payment);
         sqlx::query!(
             r#"
-        UPDATE payments
-        SET status = $1,
-        provider_reference = $2,
-        failure_reason = $3,
-        paid_at = $4
-        WHERE id = $5
-        "#,
+            UPDATE payments
+            SET
+                status = $1,
+               payment_provider = $2,
+                provider_reference = $3,
+                failure_reason = $4,
+                retry_count = $5,
+                paid_at = $6
+            WHERE id = $7
+            "#,
             row.status,
+            row.payment_provider,
             row.provider_reference,
             row.failure_reason,
+            row.retry_count,
             row.paid_at,
             row.id
         )

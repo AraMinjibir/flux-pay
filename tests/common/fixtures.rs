@@ -1,12 +1,16 @@
 use std::sync::Arc;
 
 use flux_pay::{
-    application::payment_orchestrator::PaymentOrchestrator,
+    application::payment_orchestrator::{
+        OrchestrationMetadata, OrchestrationResult, PaymentOrchestrator,
+    },
     domain::{
         orchestration::gateway::PaymentGateway,
         payment::{
             method::PaymentMethod::Card,
-            payment::{CreatePaymentCommand, Payment},
+            payment::{CreatePaymentCommand, Payment, PaymentInitializationResult},
+            provider::PaymentProvider,
+            status::PaymentStatus,
         },
         services::payment_service_impl::PaymentServiceImpl,
         shared::{currency::Currency::NGN, money::Money},
@@ -17,6 +21,7 @@ use uuid::Uuid;
 
 use crate::common::mock_repo::{MockGateway, MockIdempotency, MockPaymentRepo, MockRouting};
 
+#[allow(dead_code)]
 pub struct TestContext {
     pub gateway: MockGateway,
     pub payment_repo: MockPaymentRepo,
@@ -24,6 +29,7 @@ pub struct TestContext {
     pub routing: MockRouting,
 }
 
+#[allow(dead_code)]
 impl TestContext {
     pub fn new() -> Self {
         Self {
@@ -38,8 +44,8 @@ impl TestContext {
         let payment = test_payment();
 
         CreatePaymentCommand {
+            email: None,
             amount: payment.amount(),
-            currency: payment.amount().currency(),
             merchant_id: payment.merchant_id(),
             description: payment.description(),
             payment_method: payment.payment_method(),
@@ -73,4 +79,27 @@ pub fn test_payment() -> Payment {
         Card,
     )
     .expect("Test payment should be valid")
+}
+#[allow(dead_code)]
+pub fn mock_execution() -> OrchestrationResult {
+    OrchestrationResult {
+        initialization: PaymentInitializationResult {
+            id: None,
+            merchant_id: None,
+            amount: None,
+            description: None,
+            reference: None,
+            status: PaymentStatus::Processing,
+            selected_provider: Some(PaymentProvider::Mock),
+            provider_reference: "MOCK-123".to_string(),
+            authorization_url: None,
+            client_secret: None,
+            created_at: None,
+        },
+        metadata: OrchestrationMetadata {
+            selected_provider: PaymentProvider::Mock,
+            retry_count: 0,
+            attempted_providers: vec![PaymentProvider::Mock],
+        },
+    }
 }

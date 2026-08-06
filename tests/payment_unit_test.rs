@@ -125,9 +125,16 @@ async fn generate_payment_succeeds_when_reserved() {
         .return_once(|_| {
             Ok(PaymentInitializationResult {
                 provider_reference: "REF-123".to_string(),
+                selected_provider: None,
                 authorization_url: Some("https://pay.flux".to_string()),
                 client_secret: Some("secret".to_string()),
                 status: PaymentStatus::Created,
+                amount: None,
+                created_at: None,
+                id: None,
+                merchant_id: None,
+                reference: None,
+                description: None,
             })
         });
 
@@ -269,9 +276,16 @@ async fn generate_payment_retries_and_succeeds() {
         .return_once(|_| {
             Ok(PaymentInitializationResult {
                 provider_reference: "REF-123".to_string(),
+                selected_provider: None,
                 authorization_url: Some("https://pay.flux".to_string()),
                 client_secret: Some("secret".to_string()),
                 status: PaymentStatus::Created,
+                amount: None,
+                created_at: None,
+                id: None,
+                merchant_id: None,
+                reference: None,
+                description: None,
             })
         });
 

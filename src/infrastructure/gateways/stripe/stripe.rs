@@ -60,7 +60,14 @@ impl PaymentGateway for StripeGateway {
             .send()
             .await?;
 
-        let response = response.json::<StripePaymentIntentResponse>().await?;
-        Ok(response.into())
+        let status = response.status();
+        let body = response.text().await?;
+
+        if !status.is_success() {
+            return Err(DomainError::ProviderUnavailable);
+        }
+        let parsed: StripePaymentIntentResponse = serde_json::from_str(&body)?;
+
+        Ok(parsed.into())
     }
 }

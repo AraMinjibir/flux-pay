@@ -57,13 +57,16 @@ impl PaymentGateway for InterswitchGateway {
 
         let response = self
             .client
-            .post(format!("{}/api/v3/purchases", self.config.base_url,))
+            .post(format!("{}/api/v3/purchases", self.config.base_url))
             .header("Client-Id", &self.config.client_id)
             .header("Client-Secret", &self.config.secret_key)
             .json(&request)
             .send()
             .await?;
-        let response = response.json::<InterswitchInitializeResponse>().await?;
-        Ok(response.into())
+
+        let body = response.text().await?;
+        let parsed: InterswitchInitializeResponse = serde_json::from_str(&body)?;
+
+        Ok(parsed.into())
     }
 }

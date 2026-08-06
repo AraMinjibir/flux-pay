@@ -60,8 +60,12 @@ impl PaymentGateway for PaystackGateway {
             .send()
             .await?;
 
-        let response = response.json::<PaystackInitializeResponse>().await?;
+        response.status();
 
-        Ok(response.into())
+        let body = response.text().await?;
+
+        let parsed: PaystackInitializeResponse = serde_json::from_str(&body)?;
+
+        Ok(parsed.into())
     }
 }
