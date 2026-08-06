@@ -1,9 +1,11 @@
 use redis::Client;
 
+#[allow(dead_code)]
 pub struct TestRedis {
     pub client: Client,
 }
 
+#[allow(dead_code)]
 impl TestRedis {
     pub async fn new() -> Self {
         dotenvy::dotenv().ok();

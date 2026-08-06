@@ -3,12 +3,14 @@ use std::env;
 use std::sync::LazyLock;
 use tokio::sync::OnceCell;
 
+#[allow(dead_code)]
 pub struct TestDb {
     pub pool: PgPool,
 }
 
 static INIT: LazyLock<OnceCell<()>> = LazyLock::new(OnceCell::const_new);
 
+#[allow(dead_code)]
 impl TestDb {
     pub async fn new() -> Self {
         dotenvy::dotenv().ok();
