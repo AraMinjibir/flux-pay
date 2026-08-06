@@ -2,10 +2,14 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::domain::{
-    errors::domain_error::DomainError,
-    payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
-    shared::{currency::Currency, money::Money},
+use crate::{
+    application::payment_orchestrator::OrchestrationResult,
+    domain::{
+        errors::domain_error::DomainError,
+        idempotency::models::StoredResponse,
+        payment::{method::PaymentMethod, provider::PaymentProvider, status::PaymentStatus},
+        shared::{currency::Currency, money::Money},
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -72,6 +76,24 @@ impl PaymentInitializationRequest {
         }
     }
 }
+impl PaymentInitializationResult {
+    pub fn from_stored_response(response: StoredResponse) -> Self {
+        Self {
+            id: None,
+            merchant_id: None,
+            amount: None,
+            description: None,
+            reference: None,
+            selected_provider: None,
+            provider_reference: response.provider_reference,
+            authorization_url: response.authorization_url,
+            client_secret: response.client_secret,
+            status: response.status,
+            created_at: None,
+        }
+    }
+}
+
 impl Payment {
     pub fn new(
         id: Uuid,
@@ -140,7 +162,7 @@ impl Payment {
         })
     }
 
-    pub fn generate_reference_number() -> String {
+     fn generate_reference_number() -> String {
         let id = Uuid::new_v4().to_string().replace("-", "");
         format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
@@ -198,23 +220,47 @@ impl Payment {
         self.paid_at
     }
 
-    pub fn set_status(&mut self, status: PaymentStatus) {
-        self.status = status
-    }
-    pub fn set_provider_reference(&mut self, provider_reference: Option<String>) {
-        self.provider_reference = provider_reference
-    }
-    pub fn set_failure_reason(&mut self, failure_reason: Option<String>) {
-        self.failure_reason = failure_reason
+    pub fn apply_initialization(
+        &mut self,
+        execution: &OrchestrationResult,
+    ) -> Result<(), DomainError> {
+        self.provider = Some(execution.metadata.selected_provider.clone());
+
+        self.provider_reference = Some(execution.initialization.provider_reference.clone());
+
+        self.retry_count = execution.metadata.retry_count;
+
+        Ok(())
     }
 
-    pub fn set_paid_at(&mut self, paid_at: Option<DateTime<Utc>>) {
-        self.paid_at = paid_at
+    pub fn apply_failure(&mut self, error: &DomainError) -> Result<(), DomainError> {
+        self.mark_failed()?;
+
+        self.failure_reason = Some(error.to_string());
+
+        if let DomainError::PaymentProviderFailed { metadata, .. } = error {
+            self.retry_count = metadata.retry_count;
+        }
+
+        Ok(())
     }
-    pub fn set_selected_provider(&mut self, provider: Option<PaymentProvider>) {
-        self.provider = provider
-    }
-    pub fn set_retry_count(&mut self, retry_count: i16) {
-        self.retry_count = retry_count
+
+    pub fn to_initialization_result(
+        &self,
+        initialization: &PaymentInitializationResult,
+    ) -> PaymentInitializationResult {
+        PaymentInitializationResult {
+            id: Some(self.id()),
+            merchant_id: Some(self.merchant_id()),
+            amount: Some(self.amount()),
+            description: self.description(),
+            reference: Some(self.reference()),
+            status: self.status(),
+            created_at: Some(self.created_at()),
+            selected_provider: self.provider(),
+            provider_reference: initialization.provider_reference.clone(),
+            authorization_url: initialization.authorization_url.clone(),
+            client_secret: initialization.client_secret.clone(),
+        }
     }
 }
