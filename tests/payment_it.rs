@@ -1,9 +1,6 @@
 mod common;
 use flux_pay::{
-    domain::{
-        errors::domain_error::DomainError,
-        payment::repository::PaymentRepository,
-    },
+    domain::{errors::domain_error::DomainError, payment::repository::PaymentRepository},
     infrastructure::repositories::postgres_payment_repository::PostgresPaymentRepository,
 };
 

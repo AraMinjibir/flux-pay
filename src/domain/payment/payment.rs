@@ -162,7 +162,7 @@ impl Payment {
         })
     }
 
-     fn generate_reference_number() -> String {
+    fn generate_reference_number() -> String {
         let id = Uuid::new_v4().to_string().replace("-", "");
         format!("RF-FluxPay-{}", &id[..10].to_uppercase())
     }
