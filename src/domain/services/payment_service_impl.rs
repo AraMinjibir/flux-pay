@@ -42,7 +42,6 @@ impl PaymentService for PaymentServiceImpl {
         &self,
         command: CreatePaymentCommand,
     ) -> Result<PaymentInitializationResult, DomainError> {
-
         // 1. Idempotency protection
         info!("1. Reserving idempotency key...");
         let operation = self
@@ -61,7 +60,7 @@ impl PaymentService for PaymentServiceImpl {
 
             ReservationResult::Reserved => {}
         }
-        
+
         // 2. Create payment
         let mut payment = Payment::generate_payment(
             command.merchant_id,
