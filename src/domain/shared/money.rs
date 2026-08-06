@@ -15,6 +15,13 @@ impl Money {
         }
         Ok(Self { amount, currency })
     }
+    pub fn validate(&self) -> Result<(), DomainError> {
+        if self.amount <= 0 {
+            return Err(DomainError::InvalidAmount);
+        }
+
+        Ok(())
+    }
 
     pub fn amount(&self) -> i64 {
         self.amount
