@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use uuid::Uuid;
 
 use crate::{
     domain::{
@@ -57,12 +58,10 @@ impl PaymentGateway for MockPaymentGateway {
 
         Ok(PaymentInitializationResult {
             authorization_url: Some(fake_url),
-            provider_reference: payment
-                .provider_reference
-                .clone()
-                .expect("No provider reference"),
+            provider_reference: format!("MOCK-{}", Uuid::new_v4()),
+            selected_provider: None,
             status: PaymentStatus::Processing,
-            client_secret: None,
+            client_secret: Some(format!("secret-{}", Uuid::new_v4())),
             amount: None,
             created_at: None,
             id: None,
