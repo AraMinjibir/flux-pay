@@ -44,6 +44,7 @@ pub struct PaymentInitializationResult {
     pub description: Option<String>,
     pub reference: Option<String>,
     pub status: PaymentStatus,
+    pub selected_provider: Option<PaymentProvider>,
     pub provider_reference: String,
     pub authorization_url: Option<String>,
     pub client_secret: Option<String>,
@@ -51,6 +52,7 @@ pub struct PaymentInitializationResult {
 }
 #[derive(Debug, Clone)]
 pub struct CreatePaymentCommand {
+    pub email: Option<String>,
     pub merchant_id: Uuid,
     pub amount: Money,
     pub description: Option<String>,
@@ -59,9 +61,9 @@ pub struct CreatePaymentCommand {
 }
 
 impl PaymentInitializationRequest {
-    pub fn converted_request(payment: &Payment) -> Self {
+    pub fn converted_request(command: &CreatePaymentCommand, payment: &Payment) -> Self {
         Self {
-            email: None,
+            email: command.email.clone(),
             amount: payment.amount().amount(),
             currency: payment.amount().currency(),
             reference: payment.reference(),
