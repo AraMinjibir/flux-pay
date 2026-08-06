@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use std::time::Duration;
 
+use tracing::info;
+
 use crate::{
     domain::{
         errors::domain_error::DomainError,
@@ -76,6 +78,7 @@ impl PaymentOrchestrator {
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
 
             for attempt in 1..=Self::MAX_RETRIES {
+                info!("Trying provider: {:?}", provider);
                 match gateway.initialize_payment(request).await {
                     Ok(initialization) => {
                         return Ok(OrchestrationResult {
@@ -89,6 +92,9 @@ impl PaymentOrchestrator {
                     }
 
                     Err(error) => {
+                        info!("Provider failed: {:?}", provider);
+                        info!("Error: {:?}", error);
+                        info!("Retryable: {}", error.is_retryable());
                         let retryable = error.is_retryable();
 
                         last_error = Some(error);
