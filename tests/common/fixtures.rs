@@ -38,6 +38,7 @@ impl TestContext {
         let payment = test_payment();
 
         CreatePaymentCommand {
+            email: None,
             amount: payment.amount(),
             merchant_id: payment.merchant_id(),
             description: payment.description(),
