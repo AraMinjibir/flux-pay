@@ -79,7 +79,7 @@ impl PaymentInitializationRequest {
 impl PaymentInitializationResult {
     pub fn from_stored_response(response: StoredResponse) -> Self {
         Self {
-            id: None,
+            id: Some(response.payment_id),
             merchant_id: None,
             amount: None,
             description: None,
