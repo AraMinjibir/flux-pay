@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::sync::Arc;
 
 use flux_pay::{
@@ -17,11 +19,11 @@ use flux_pay::{
     },
     infrastructure::orchestration::provider_registry::ProviderRegistry,
 };
+use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::common::mock_repo::{MockGateway, MockIdempotency, MockPaymentRepo, MockRouting};
 
-#[allow(dead_code)]
 pub struct TestContext {
     pub gateway: MockGateway,
     pub payment_repo: MockPaymentRepo,
@@ -29,7 +31,6 @@ pub struct TestContext {
     pub routing: MockRouting,
 }
 
-#[allow(dead_code)]
 impl TestContext {
     pub fn new() -> Self {
         Self {
@@ -80,7 +81,6 @@ pub fn test_payment() -> Payment {
     )
     .expect("Test payment should be valid")
 }
-#[allow(dead_code)]
 pub fn mock_execution() -> OrchestrationResult {
     OrchestrationResult {
         initialization: PaymentInitializationResult {
@@ -102,4 +102,18 @@ pub fn mock_execution() -> OrchestrationResult {
             attempted_providers: vec![PaymentProvider::Mock],
         },
     }
+}
+
+pub fn test_payload() -> Value {
+    json!({
+      "email": "test@gmail.com",
+      "merchant_id": "550e8400-e29b-41d4-a716-446655443421",
+      "amount": {
+        "amount": 5500000,
+        "currency": "NGN"
+      },
+      "description": "Gadgets",
+      "payment_method": "MobileMoney",
+       "idempotency_key": "0c5d0e64-c6b7-3af5-4d43-33c23d8113ae"
+    })
 }
