@@ -2,7 +2,8 @@ pub struct AppConfig {
     pub mock: MockConfig,
     pub paystack: PaystackConfig,
     pub stripe: StripeConfig,
-    pub betastack: InterswitchConfig,
+    pub interswitch: InterswitchConfig,
+    pub zainpay: ZainpayConfig,
 }
 
 pub struct MockConfig {
@@ -20,6 +21,11 @@ pub struct StripeConfig {
 }
 
 pub struct PaystackConfig {
+    pub secret_key: String,
+    pub base_url: String,
+}
+
+pub struct ZainpayConfig {
     pub secret_key: String,
     pub base_url: String,
 }
