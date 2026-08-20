@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use std::time::Duration;
 
@@ -6,6 +8,7 @@ use rand::Rng;
 use tracing::info;
 
 use crate::{
+    application::circuit_breaker::CircuitBreaker,
     domain::{
         errors::domain_error::DomainError,
         orchestration::{routing_request::RoutingRequest, routing_strategy::RoutingStrategy},
@@ -19,6 +22,7 @@ use crate::{
 pub struct PaymentOrchestrator {
     registry: Arc<ProviderRegistry>,
     routing_strategy: Arc<dyn RoutingStrategy>,
+    circuit_breakers: HashMap<PaymentProvider, Arc<Mutex<CircuitBreaker>>>,
 }
 #[derive(Debug, Clone)]
 pub struct OrchestrationMetadata {
@@ -49,6 +53,7 @@ impl PaymentOrchestrator {
         Self {
             registry,
             routing_strategy,
+            circuit_breakers: HashMap::new(),
         }
     }
 
@@ -72,17 +77,45 @@ impl PaymentOrchestrator {
 
         for provider in &providers {
             attempted_providers.push(provider.clone());
-
+        
             let gateway = self
                 .registry
                 .get(provider)
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
-
+        
+            let circuit_breaker = self
+                .circuit_breakers
+                .get(provider)
+                .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
+        
+            let allowed = {
+                let mut breaker = circuit_breaker.lock().await;
+                breaker.before_request()
+            };
+        
+            if !allowed {
+                info!(
+                    "Circuit breaker OPEN for provider {:?}, skipping provider",
+                    provider
+                );
+        
+                continue;
+            }
+        
             for attempt in 1..=Self::MAX_RETRIES {
-                info!("Trying provider {:?}, attempt {}", provider, attempt);
-
+                info!(
+                    "Trying provider {:?}, attempt {}",
+                    provider,
+                    attempt
+                );
+        
                 match gateway.initialize_payment(request).await {
                     Ok(initialization) => {
+                        {
+                            let mut breaker = circuit_breaker.lock().await;
+                            breaker.record_success();
+                        }
+        
                         return Ok(OrchestrationResult {
                             initialization,
                             metadata: OrchestrationMetadata {
@@ -92,29 +125,38 @@ impl PaymentOrchestrator {
                             },
                         });
                     }
-
+        
                     Err(error) => {
                         info!("Provider failed: {:?}", provider);
                         info!("Error: {:?}", error);
-
+        
                         let retryable = error.is_retryable();
-
+        
                         info!("Retryable: {}", retryable);
-
+        
+                        {
+                            let mut breaker = circuit_breaker.lock().await;
+                            breaker.record_failure();
+                        }
+        
                         last_error = Some(error);
-
+        
                         if retryable && attempt < Self::MAX_RETRIES {
                             retry_count += 1;
-
+        
                             let delay = Self::calculate_retry_delay(attempt);
-
-                            info!("Retrying provider {:?} after {:?}", provider, delay);
-
+        
+                            info!(
+                                "Retrying provider {:?} after {:?}",
+                                provider,
+                                delay
+                            );
+        
                             tokio::time::sleep(delay).await;
-
+        
                             continue;
                         }
-
+        
                         break;
                     }
                 }
