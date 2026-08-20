@@ -60,3 +60,4 @@ testcontainers-modules = { version = "0.13", features = [
     "redis",
 ] }
 
+rand = "0.9"
