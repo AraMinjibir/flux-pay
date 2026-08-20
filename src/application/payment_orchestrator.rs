@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use std::time::Duration;
 
+use rand::Rng;
 use tracing::info;
 
 use crate::{
@@ -37,8 +38,9 @@ pub struct OrchestrationResult {
 }
 
 impl PaymentOrchestrator {
-    const MAX_RETRIES: u8 = 3;
-    const RETRY_DELAY: Duration = Duration::from_millis(200);
+    const MAX_RETRIES: u32 = 3;
+    const BASE_RETRY_DELAY_MS: u64 = 500;
+    const MAX_RETRY_DELAY_MS: u64 = 10_000;
 
     pub fn new(
         registry: Arc<ProviderRegistry>,
@@ -69,7 +71,6 @@ impl PaymentOrchestrator {
         let mut attempted_providers = Vec::new();
 
         for provider in &providers {
-            // Record the attempted providers
             attempted_providers.push(provider.clone());
 
             let gateway = self
@@ -78,7 +79,8 @@ impl PaymentOrchestrator {
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
 
             for attempt in 1..=Self::MAX_RETRIES {
-                info!("Trying provider: {:?}", provider);
+                info!("Trying provider {:?}, attempt {}", provider, attempt);
+
                 match gateway.initialize_payment(request).await {
                     Ok(initialization) => {
                         return Ok(OrchestrationResult {
@@ -94,20 +96,25 @@ impl PaymentOrchestrator {
                     Err(error) => {
                         info!("Provider failed: {:?}", provider);
                         info!("Error: {:?}", error);
-                        info!("Retryable: {}", error.is_retryable());
+
                         let retryable = error.is_retryable();
+
+                        info!("Retryable: {}", retryable);
 
                         last_error = Some(error);
 
-                        // Retry this provider if possible.
                         if retryable && attempt < Self::MAX_RETRIES {
                             retry_count += 1;
 
-                            tokio::time::sleep(Self::RETRY_DELAY).await;
+                            let delay = Self::calculate_retry_delay(attempt);
+
+                            info!("Retrying provider {:?} after {:?}", provider, delay);
+
+                            tokio::time::sleep(delay).await;
+
                             continue;
                         }
 
-                        // Move to the next provider.
                         break;
                     }
                 }
@@ -121,5 +128,16 @@ impl PaymentOrchestrator {
                 attempted_providers,
             },
         })
+    }
+
+    fn calculate_retry_delay(attempt: u32) -> Duration {
+        let exponential_delay = Self::BASE_RETRY_DELAY_MS
+            .saturating_mul(2u64.saturating_pow(attempt.saturating_sub(1)));
+
+        let capped_delay = exponential_delay.min(Self::MAX_RETRY_DELAY_MS);
+
+        let jitter = rand::rng().random_range(0..=capped_delay);
+
+        Duration::from_millis(jitter)
     }
 }
