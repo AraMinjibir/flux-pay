@@ -4,9 +4,9 @@ use strum_macros::{Display, EnumString};
 #[derive(Debug, Clone, Serialize, Deserialize, Display, EnumString, Eq, Hash, PartialEq)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum PaymentProvider {
-    Checkout,
     Interswitch,
     Mock,
     Paystack,
     Stripe,
+    Zainpay,
 }

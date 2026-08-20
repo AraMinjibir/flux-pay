@@ -14,10 +14,13 @@ use crate::{
         },
     },
     infrastructure::{
-        config::app_config::{InterswitchConfig, MockConfig, PaystackConfig, StripeConfig},
+        config::app_config::{
+            InterswitchConfig, MockConfig, PaystackConfig, StripeConfig, ZainpayConfig,
+        },
         gateways::{
             interswitch::interswitch::InterswitchGateway, mock::MockPaymentGateway,
             paystack::paystack::PaystackGateway, stripe::stripe::StripeGateway,
+            zainpay::zainpay::ZainpayGateway,
         },
         orchestration::{
             currency_rounting_strategy::CurrencyRoutingStrategy,
@@ -67,14 +70,20 @@ pub async fn build_app_state() -> Result<AppState, DomainError> {
 
         base_url: env::var("STRIPE_BASE_URL").expect("STRIPE_BASE_URL must be set"),
     };
+    let zainpay_config = ZainpayConfig {
+        base_url: env::var("ZAINPAY_BASE_URL").expect("ZAINPAY_BASE_URL must be set"),
+        secret_key: env::var("ZAINPAY_SECRET_KEY").expect("ZAINPAY_SECRET_KEY must be set"),
+    };
     let paystack = Arc::new(PaystackGateway::new(paystack_config));
     let mock = Arc::new(MockPaymentGateway::new(mock_config));
     let stripe = Arc::new(StripeGateway::new(stripe_config));
     let interswitch = Arc::new(InterswitchGateway::new(interswitch_config));
+    let zainpay = Arc::new(ZainpayGateway::new(zainpay_config));
 
     let routing = Arc::new(CurrencyRoutingStrategy::new());
 
-    let provider_registry = ProviderRegistry::new(vec![paystack, interswitch, stripe, mock])?;
+    let provider_registry =
+        ProviderRegistry::new(vec![paystack, interswitch, stripe, mock, zainpay])?;
 
     let provider_registry = Arc::new(provider_registry);
 

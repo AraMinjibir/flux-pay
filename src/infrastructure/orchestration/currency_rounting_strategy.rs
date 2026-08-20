@@ -17,6 +17,7 @@ impl CurrencyRoutingStrategy {
         routes.insert(
             Currency::NGN,
             vec![
+                PaymentProvider::Zainpay,
                 PaymentProvider::Paystack,
                 PaymentProvider::Interswitch,
                 PaymentProvider::Mock,
