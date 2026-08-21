@@ -49,9 +49,12 @@ Every payment follows a deterministic lifecycle, ensuring only valid state trans
 
 * RESTful payment API
 * Multi-provider payment routing
+* Provider abstraction
 * Distributed idempotency with Redis
-* Automatic retry strategy
-* Provider failover
+* Provider-aware retry strategy
+* Exponential backoff with jitter
+* Circuit breaker
+* Automatic provider failover
 * Persistent transaction storage
 * Structured logging
 * Explicit payment state machine
@@ -62,51 +65,78 @@ Every payment follows a deterministic lifecycle, ensuring only valid state trans
 
 ```
 Client Request
-        │
-        ▼
+      │
+      ▼
 Validate Request
-        │
-        ▼
+      │
+      ▼
 Idempotency Check (Redis)
-        │
-  ┌─────┴─────┐
-  │           │
-Hit          Miss
-  │           │
-  ▼           ▼
-Return     Persist Payment
-Cached      (CREATED)
-Response         │
-                 ▼
-        Primary Provider
-                 │
-        ┌────────┴────────┐
-        │                 │
-    Success           Failure
-        │                 │
-        ▼                 ▼
- Persist SUCCESS      Retry Once
-                          │
-                 ┌────────┴────────┐
-                 │                 │
-             Success           Failure
-                 │                 │
-                 ▼                 ▼
-        Persist SUCCESS   Secondary Provider
-                                   │
-                          ┌────────┴────────┐
-                          │                 │
-                      Success           Failure
-                          │                 │
-                          ▼                 ▼
-                 Persist SUCCESS   Persist FAILED
-                          │
-                          ▼
-                   HTTP Response
+      │
+ ┌────┴─────┐
+ │          │
+Hit        Miss
+ │          │
+ ▼          ▼
+Return    Persist Payment
+Cached     (CREATED)
+Response      │
+              ▼
+       Select Provider
+              │
+              ▼
+      Circuit Breaker Check
+              │
+       ┌──────┴──────┐
+       │             │
+    Closed        Open
+       │             │
+       ▼             ▼
+Provider Call    Failover /
+       │          Next Provider
+ ┌─────┴─────┐
+ │           │
+Success    Failure
+ │           │
+ ▼           ▼
+Persist   Classify Error
+SUCCESS       │
+         ┌────┴─────┐
+         │          │
+      Retryable  Non-Retryable
+         │          │
+         ▼          ▼
+  Exponential    Failover
+  Backoff +       / Next
+    Jitter       Provider
+         │
+         ▼
+     Retry Call
+         │
+    ┌────┴─────┐
+    │          │
+ Success    Exhausted
+    │          │
+    ▼          ▼
+Persist     Circuit
+SUCCESS     Breaker
+            Evaluation
+                │
+                ▼
+             Failover
+                │
+                ▼
+        Next Available Provider
+                │
+                ▼
+          Final Transaction
+              State
 ```
 
-Every request is validated, protected by Redis-backed idempotency, persisted before execution, and processed through a resilient orchestration pipeline. Transient failures trigger retries, while unrecoverable failures automatically fail over to a secondary payment provider before the final transaction state is recorded.
+Every payment request is validated and protected by Redis-backed distributed idempotency before execution. The payment is persisted in the CREATED state and passed to the orchestration layer, which selects an appropriate provider and evaluates its circuit state before making the external call.
 
+Transient provider failures are classified and retried according to the retry policy using exponential backoff and jitter, reducing the risk of synchronized retry storms. Repeated provider failures contribute to the circuit breaker, which can prevent further requests from being sent to an unhealthy provider.
+
+When retries are exhausted, the failure is non-retryable, or the provider's circuit is open, the orchestrator can fail over to another available provider. The final transaction state is then persisted and returned to the client.
 ---
 
 
