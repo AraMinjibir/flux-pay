@@ -8,7 +8,7 @@ use rand::Rng;
 use tracing::info;
 
 use crate::{
-    application::circuit_breaker::CircuitBreaker,
+    application::circuit_breaker::{CircuitBreaker, CircuitPermission},
     domain::{
         errors::domain_error::DomainError,
         orchestration::{routing_request::RoutingRequest, routing_strategy::RoutingStrategy},
@@ -49,11 +49,12 @@ impl PaymentOrchestrator {
     pub fn new(
         registry: Arc<ProviderRegistry>,
         routing_strategy: Arc<dyn RoutingStrategy>,
+        circuit_breakers: HashMap<PaymentProvider, Arc<Mutex<CircuitBreaker>>>,
     ) -> Self {
         Self {
             registry,
             routing_strategy,
-            circuit_breakers: HashMap::new(),
+            circuit_breakers,
         }
     }
 
@@ -76,46 +77,62 @@ impl PaymentOrchestrator {
         let mut attempted_providers = Vec::new();
 
         for provider in &providers {
+            info!("Evaluating provider {:?}", provider);
+
             attempted_providers.push(provider.clone());
-        
+
             let gateway = self
                 .registry
                 .get(provider)
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
-        
+
             let circuit_breaker = self
                 .circuit_breakers
                 .get(provider)
                 .ok_or_else(|| DomainError::ProviderNotFound(provider.clone()))?;
-        
-            let allowed = {
-                let mut breaker = circuit_breaker.lock().await;
-                breaker.before_request()
-            };
-        
-            if !allowed {
-                info!(
-                    "Circuit breaker OPEN for provider {:?}, skipping provider",
-                    provider
-                );
-        
-                continue;
-            }
-        
+
             for attempt in 1..=Self::MAX_RETRIES {
                 info!(
-                    "Trying provider {:?}, attempt {}",
-                    provider,
-                    attempt
+                    "Calling circuit breaker for {:?}, attempt {}",
+                    provider, attempt
                 );
-        
+
+                let permission = {
+                    let mut breaker = circuit_breaker.lock().await;
+                    breaker.before_request()
+                };
+
+                match permission {
+                    CircuitPermission::Reject => {
+                        info!(
+                            "Circuit breaker rejected request for {:?}, \
+                             skipping provider",
+                            provider
+                        );
+
+                        break;
+                    }
+
+                    CircuitPermission::Allow => {
+                        info!(
+                            "Circuit breaker allowed request for {:?}, \
+                             attempt {}",
+                            provider, attempt
+                        );
+                    }
+
+                    CircuitPermission::Probe => {
+                        info!("Circuit breaker granted recovery probe for {:?}", provider);
+                    }
+                }
+
+                info!("Trying provider {:?}, attempt {}", provider, attempt);
+
                 match gateway.initialize_payment(request).await {
                     Ok(initialization) => {
-                        {
-                            let mut breaker = circuit_breaker.lock().await;
-                            breaker.record_success();
-                        }
-        
+                        let mut breaker = circuit_breaker.lock().await;
+                        breaker.record_success();
+
                         return Ok(OrchestrationResult {
                             initialization,
                             metadata: OrchestrationMetadata {
@@ -125,39 +142,46 @@ impl PaymentOrchestrator {
                             },
                         });
                     }
-        
+
                     Err(error) => {
                         info!("Provider failed: {:?}", provider);
                         info!("Error: {:?}", error);
-        
+
                         let retryable = error.is_retryable();
-        
+
                         info!("Retryable: {}", retryable);
-        
+
                         {
                             let mut breaker = circuit_breaker.lock().await;
                             breaker.record_failure();
                         }
-        
+
                         last_error = Some(error);
-        
-                        if retryable && attempt < Self::MAX_RETRIES {
-                            retry_count += 1;
-        
-                            let delay = Self::calculate_retry_delay(attempt);
-        
+
+                        // HALF_OPEN is a recovery probe.
+                        // It must never be retried.
+                        if permission == CircuitPermission::Probe {
                             info!(
-                                "Retrying provider {:?} after {:?}",
-                                provider,
-                                delay
+                                "Recovery probe failed for {:?}; \
+                                 circuit is OPEN again, moving to next provider",
+                                provider
                             );
-        
-                            tokio::time::sleep(delay).await;
-        
-                            continue;
+
+                            break;
                         }
-        
-                        break;
+
+                        // Non-retryable errors or exhausted retries.
+                        if !retryable || attempt >= Self::MAX_RETRIES {
+                            break;
+                        }
+
+                        retry_count += 1;
+
+                        let delay = Self::calculate_retry_delay(attempt);
+
+                        info!("Retrying provider {:?} after {:?}", provider, delay);
+
+                        tokio::time::sleep(delay).await;
                     }
                 }
             }
