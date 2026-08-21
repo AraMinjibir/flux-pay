@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 
-use std::sync::Arc;
-
 use flux_pay::{
-    application::payment_orchestrator::{
-        OrchestrationMetadata, OrchestrationResult, PaymentOrchestrator,
+    application::{
+        circuit_breaker::CircuitBreaker,
+        payment_orchestrator::{OrchestrationMetadata, OrchestrationResult, PaymentOrchestrator},
     },
     domain::{
         orchestration::gateway::PaymentGateway,
@@ -20,6 +19,8 @@ use flux_pay::{
     infrastructure::orchestration::provider_registry::ProviderRegistry,
 };
 use serde_json::{Value, json};
+use std::{collections::HashMap, sync::Arc, time::Duration};
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 use crate::common::mock_repo::{MockGateway, MockIdempotency, MockPaymentRepo, MockRouting};
@@ -59,9 +60,36 @@ impl TestContext {
 
         let registry = ProviderRegistry::new(vec![gateway]).unwrap();
 
+        let circuit_breakers = HashMap::from([
+            (
+                PaymentProvider::Zainpay,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+            (
+                PaymentProvider::Paystack,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+            (
+                PaymentProvider::Interswitch,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+            (
+                PaymentProvider::Stripe,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+            (
+                PaymentProvider::Interswitch,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+            (
+                PaymentProvider::Mock,
+                Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+            ),
+        ]);
         let orchestrator = Arc::new(PaymentOrchestrator::new(
             Arc::new(registry),
             Arc::new(self.routing),
+            circuit_breakers,
         ));
 
         PaymentServiceImpl::new(

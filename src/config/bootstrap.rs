@@ -1,13 +1,16 @@
-use std::{env, sync::Arc};
+use std::{collections::HashMap, env, sync::Arc};
 
 use redis::Client;
 use sqlx::PgPool;
+use std::time::Duration;
+use tokio::sync::Mutex;
 
 use crate::{
-    application::payment_orchestrator::PaymentOrchestrator,
+    application::{circuit_breaker::CircuitBreaker, payment_orchestrator::PaymentOrchestrator},
     config::app_state::AppState,
     domain::{
         errors::domain_error::DomainError,
+        payment::provider::PaymentProvider,
         services::{
             idempotency_service_impl::IdempotencyServiceImpl,
             payment_service_impl::PaymentServiceImpl,
@@ -84,10 +87,32 @@ pub async fn build_app_state() -> Result<AppState, DomainError> {
 
     let provider_registry =
         ProviderRegistry::new(vec![paystack, interswitch, stripe, mock, zainpay])?;
+    let circuit_breakers = HashMap::from([
+        (
+            PaymentProvider::Zainpay,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Paystack,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Interswitch,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Mock,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+    ]);
 
     let provider_registry = Arc::new(provider_registry);
 
-    let orchestrator = Arc::new(PaymentOrchestrator::new(provider_registry.clone(), routing));
+    let orchestrator = Arc::new(PaymentOrchestrator::new(
+        provider_registry.clone(),
+        routing,
+        circuit_breakers,
+    ));
 
     let payment_service = Arc::new(PaymentServiceImpl::new(
         payment_repository.clone(),

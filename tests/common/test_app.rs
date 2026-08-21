@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::{
+    collections::HashMap,
     net::TcpListener,
     sync::{
         Arc,
@@ -12,7 +13,7 @@ use std::{
 use actix_web::{App, HttpResponse, HttpServer, web};
 use async_trait::async_trait;
 use flux_pay::{
-    application::payment_orchestrator::PaymentOrchestrator,
+    application::{circuit_breaker::CircuitBreaker, payment_orchestrator::PaymentOrchestrator},
     config::{app_state::AppState, routes},
     domain::{
         errors::domain_error::DomainError,
@@ -42,6 +43,7 @@ use reqwest::Client;
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use testcontainers::{ContainerAsync, runners::AsyncRunner};
 use testcontainers_modules::{postgres::Postgres, redis::Redis};
+use tokio::sync::Mutex;
 
 pub struct TestContext {
     pub address: String,
@@ -186,8 +188,39 @@ pub async fn build_test_app_state(
             .expect("failed to build provider registry"),
     );
 
+    let circuit_breakers = HashMap::from([
+        (
+            PaymentProvider::Zainpay,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Paystack,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Interswitch,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Stripe,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Interswitch,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+        (
+            PaymentProvider::Mock,
+            Arc::new(Mutex::new(CircuitBreaker::new(3, Duration::from_secs(30)))),
+        ),
+    ]);
+
     // Orchestrator
-    let orchestrator = Arc::new(PaymentOrchestrator::new(registry.clone(), routing));
+    let orchestrator = Arc::new(PaymentOrchestrator::new(
+        registry.clone(),
+        routing,
+        circuit_breakers,
+    ));
 
     // Payment service
     let payment_service = Arc::new(PaymentServiceImpl::new(
