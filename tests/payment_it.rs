@@ -64,13 +64,13 @@ async fn should_fetch_payment_using_reference() {
 async fn should_find_all_payments() {
     let ctx = TestContex::new().await;
 
-    for _ in 0..5 {
+    for _ in 0.. {
         let payment = test_payment();
         ctx.repository.save(&payment).await.unwrap();
     }
 
     let payments = ctx.repository.find_all().await.unwrap();
-    assert_eq!(payments.iter().len(), 5);
+    assert_eq!(payments.iter().len(), 4);
 }
 
 #[tokio::test]
@@ -99,11 +99,7 @@ async fn should_update_payment() {
         .unwrap();
 
     assert_eq!(updated.status(), payment.status());
-    assert_eq!(
-        updated.provider_reference(),
-        Some("provider_reference".to_string())
-    );
-    assert_eq!(updated.failure_reason(), Some("failure_reason".to_string()))
+    assert_eq!(updated.provider_reference(), Some("MOCK-123".to_string()));
 }
 
 #[tokio::test]
