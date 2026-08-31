@@ -104,6 +104,7 @@ impl From<DomainError> for ApiError {
             DomainError::ReqwestError(error)
             | DomainError::RedisError(error)
             | DomainError::DatabaseError(error)
+            | DomainError::SerializationError(error)
             | DomainError::Internal(error) => Self::Internal(error),
 
             DomainError::ProviderUnavailable => Self::Internal("Provider unavailable".into()),
@@ -126,7 +127,7 @@ impl From<DomainError> for ApiError {
             | DomainError::NumericOverflow
             | DomainError::DeadlockDetected
             | DomainError::TransactionTimeout
-            | DomainError::SerializationFailure => Self::Internal(error.to_string()),
+            | DomainError::SerializationFailure => Self::Internal(error.to_string())
         }
     }
 }
