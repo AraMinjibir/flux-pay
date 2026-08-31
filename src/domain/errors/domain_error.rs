@@ -151,7 +151,7 @@ impl fmt::Display for DomainError {
             DomainError::SerializationFailure => {
                 write!(f, "Serialization failure")
             }
-             DomainError:: SerializationError(msg) => {
+            DomainError::SerializationError(msg) => {
                 write!(f, "Database error: {}", msg)
             }
 

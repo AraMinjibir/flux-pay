@@ -32,12 +32,10 @@ pub struct ZainpayConfig {
     pub base_url: String,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct IdempotencyConfig {
     pub ttl: Duration,
 }
-
 
 impl Default for IdempotencyConfig {
     fn default() -> Self {

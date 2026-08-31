@@ -7,7 +7,11 @@ use flux_pay::{
             repository::IdempotencyRepository,
         },
         payment::status::PaymentStatus,
-    }, infrastructure::{config::app_config::IdempotencyConfig, redis::redis_idempotency_repository::RedisIdempotencyRepository},
+    },
+    infrastructure::{
+        config::app_config::IdempotencyConfig,
+        redis::redis_idempotency_repository::RedisIdempotencyRepository,
+    },
 };
 use uuid::Uuid;
 

@@ -127,7 +127,7 @@ impl From<DomainError> for ApiError {
             | DomainError::NumericOverflow
             | DomainError::DeadlockDetected
             | DomainError::TransactionTimeout
-            | DomainError::SerializationFailure => Self::Internal(error.to_string())
+            | DomainError::SerializationFailure => Self::Internal(error.to_string()),
         }
     }
 }
