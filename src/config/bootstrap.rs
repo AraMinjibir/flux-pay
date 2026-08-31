@@ -18,7 +18,8 @@ use crate::{
     },
     infrastructure::{
         config::app_config::{
-            InterswitchConfig, MockConfig, PaystackConfig, StripeConfig, ZainpayConfig,
+            IdempotencyConfig, InterswitchConfig, MockConfig, PaystackConfig, StripeConfig,
+            ZainpayConfig,
         },
         gateways::{
             interswitch::interswitch::InterswitchGateway, mock::MockPaymentGateway,
@@ -48,7 +49,11 @@ pub async fn build_app_state() -> Result<AppState, DomainError> {
     let redis_url = env::var("REDIS_URL").expect("REDIS_URL must be set");
 
     let redis_client = Client::open(redis_url).expect("Failed to create Redis client");
-    let redis_repository = Arc::new(RedisIdempotencyRepository::new(redis_client));
+    let idempotency_config = IdempotencyConfig::default();
+    let redis_repository = Arc::new(RedisIdempotencyRepository::new(
+        redis_client,
+        idempotency_config,
+    ));
 
     let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository));
 

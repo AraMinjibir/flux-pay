@@ -33,7 +33,8 @@ use flux_pay::{
         shared::currency::Currency,
     },
     infrastructure::{
-        config::app_config::MockConfig, gateways::mock::MockPaymentGateway,
+        config::app_config::{IdempotencyConfig, MockConfig},
+        gateways::mock::MockPaymentGateway,
         orchestration::provider_registry::ProviderRegistry,
         redis::redis_idempotency_repository::RedisIdempotencyRepository,
         repositories::postgres_payment_repository::PostgresPaymentRepository,
@@ -169,8 +170,12 @@ pub async fn build_test_app_state(
 
     // Redis
     let redis_client = redis::Client::open(redis_url).expect("failed to create Redis client");
+    let idempotency_config = IdempotencyConfig::default();
 
-    let redis_repository = Arc::new(RedisIdempotencyRepository::new(redis_client));
+    let redis_repository = Arc::new(RedisIdempotencyRepository::new(
+        redis_client,
+        idempotency_config,
+    ));
 
     let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository));
 

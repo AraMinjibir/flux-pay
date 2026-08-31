@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 pub struct AppConfig {
     pub mock: MockConfig,
     pub paystack: PaystackConfig,
@@ -28,4 +30,19 @@ pub struct PaystackConfig {
 pub struct ZainpayConfig {
     pub secret_key: String,
     pub base_url: String,
+}
+
+
+#[derive(Debug, Clone)]
+pub struct IdempotencyConfig {
+    pub ttl: Duration,
+}
+
+
+impl Default for IdempotencyConfig {
+    fn default() -> Self {
+        Self {
+            ttl: Duration::from_secs(24 * 60 * 60),
+        }
+    }
 }

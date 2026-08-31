@@ -7,8 +7,7 @@ use flux_pay::{
             repository::IdempotencyRepository,
         },
         payment::status::PaymentStatus,
-    },
-    infrastructure::redis::redis_idempotency_repository::RedisIdempotencyRepository,
+    }, infrastructure::{config::app_config::IdempotencyConfig, redis::redis_idempotency_repository::RedisIdempotencyRepository},
 };
 use uuid::Uuid;
 
@@ -19,8 +18,8 @@ async fn should_reserve_new_key() {
     let redis = TestRedis::new().await;
 
     redis.reset().await;
-
-    let repository = RedisIdempotencyRepository::new(redis.client);
+    let idempotency_config = IdempotencyConfig::default();
+    let repository = RedisIdempotencyRepository::new(redis.client, idempotency_config);
 
     let key = Uuid::new_v4();
 
@@ -38,8 +37,9 @@ async fn should_return_in_progress_for_duplicate_key() {
     let redis = TestRedis::new().await;
 
     redis.reset().await;
+    let idempotency_config = IdempotencyConfig::default();
 
-    let repository = RedisIdempotencyRepository::new(redis.client);
+    let repository = RedisIdempotencyRepository::new(redis.client, idempotency_config);
 
     let key = Uuid::new_v4();
 
@@ -53,10 +53,11 @@ async fn should_return_in_progress_for_duplicate_key() {
 #[tokio::test]
 async fn should_return_completed_response_after_completion() {
     let redis = TestRedis::new().await;
+    let idempotency_config = IdempotencyConfig::default();
 
     redis.reset().await;
 
-    let repository = RedisIdempotencyRepository::new(redis.client);
+    let repository = RedisIdempotencyRepository::new(redis.client, idempotency_config);
 
     let key = Uuid::new_v4();
     repository.reserve(key).await.unwrap();
