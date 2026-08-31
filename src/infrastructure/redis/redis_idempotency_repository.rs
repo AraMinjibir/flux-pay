@@ -1,24 +1,27 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
-use crate::domain::{
-    errors::domain_error::DomainError,
-    idempotency::{
-        models::{IdempotencyRecord, IdempotencyStatus, ReservationResult, StoredResponse},
-        repository::IdempotencyRepository,
+use crate::{
+    domain::{
+        errors::domain_error::DomainError,
+        idempotency::{
+            models::{IdempotencyRecord, IdempotencyStatus, ReservationResult, StoredResponse},
+            repository::IdempotencyRepository,
+        },
     },
+    infrastructure::config::app_config::IdempotencyConfig,
 };
 
 pub struct RedisIdempotencyRepository {
     client: redis::Client,
+    config: IdempotencyConfig,
 }
 impl RedisIdempotencyRepository {
-    pub fn new(client: redis::Client) -> Self {
-        Self { client }
+    pub fn new(client: redis::Client, config: IdempotencyConfig) -> Self {
+        Self { client, config }
     }
 }
 
-const IDEMPOTENCY_TTL_SECS: u64 = 24 * 60 * 60;
 #[async_trait]
 impl IdempotencyRepository for RedisIdempotencyRepository {
     async fn reserve(&self, key: Uuid) -> Result<ReservationResult, DomainError> {
@@ -40,7 +43,7 @@ impl IdempotencyRepository for RedisIdempotencyRepository {
             .arg(json)
             .arg("NX")
             .arg("EX")
-            .arg(IDEMPOTENCY_TTL_SECS)
+            .arg(self.config.ttl.as_secs())
             .query_async(&mut conn)
             .await?;
 
@@ -95,7 +98,7 @@ impl IdempotencyRepository for RedisIdempotencyRepository {
             .arg(key.to_string())
             .arg(json)
             .arg("EX")
-            .arg(IDEMPOTENCY_TTL_SECS)
+            .arg(self.config.ttl.as_secs())
             .query_async::<()>(&mut conn)
             .await?;
 

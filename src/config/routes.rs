@@ -1,9 +1,8 @@
 use actix_web::web::{self};
 
 use crate::api::payment_controller::{
-    delete_payment, find_all_payments, find_payment_by_id, find_payment_by_merchant,
-    find_payment_by_method, find_payment_by_provider, find_payment_by_reference,
-    find_payment_by_status, generate_payment,
+    delete_payment, find_all_payments, find_payment_by_merchant, find_payment_by_method,
+    find_payment_by_provider, find_payment_by_reference, find_payment_by_status, generate_payment,
 };
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
@@ -12,7 +11,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             web::scope("/payments")
                 .route("", web::post().to(generate_payment))
                 .route("", web::get().to(find_all_payments))
-                .route("/{id}", web::get().to(find_payment_by_id))
                 .route("/delete/{id}", web::delete().to(delete_payment))
                 .route(
                     "/reference/{reference}",

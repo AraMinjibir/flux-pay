@@ -51,6 +51,7 @@ pub enum DomainError {
     DeadlockDetected,
     TransactionTimeout,
     SerializationFailure,
+    SerializationError(String),
     Internal(String),
 }
 
@@ -150,6 +151,9 @@ impl fmt::Display for DomainError {
             DomainError::SerializationFailure => {
                 write!(f, "Serialization failure")
             }
+            DomainError::SerializationError(msg) => {
+                write!(f, "Database error: {}", msg)
+            }
 
             DomainError::DuplicateEntity => {
                 write!(f, "Duplicate Entity")
@@ -186,7 +190,7 @@ impl From<redis::RedisError> for DomainError {
 }
 impl From<serde_json::Error> for DomainError {
     fn from(err: serde_json::Error) -> Self {
-        DomainError::DatabaseError(err.to_string())
+        DomainError::SerializationError(err.to_string())
     }
 }
 impl From<RepositoryError> for DomainError {

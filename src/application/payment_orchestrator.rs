@@ -158,8 +158,6 @@ impl PaymentOrchestrator {
 
                         last_error = Some(error);
 
-                        // HALF_OPEN is a recovery probe.
-                        // It must never be retried.
                         if permission == CircuitPermission::Probe {
                             info!(
                                 "Recovery probe failed for {:?}; \
