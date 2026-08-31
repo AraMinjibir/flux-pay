@@ -17,7 +17,6 @@ pub trait PaymentService: Send + Sync {
         command: CreatePaymentCommand,
     ) -> Result<PaymentInitializationResult, DomainError>;
 
-    async fn find_payment_by_id(&self, id: Uuid) -> Result<Payment, DomainError>;
     async fn find_payment_by_reference(&self, reference: &str) -> Result<Payment, DomainError>;
     async fn find_payment_by_status(
         &self,

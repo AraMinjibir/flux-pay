@@ -24,16 +24,6 @@ pub async fn generate_payment(
     Ok(HttpResponse::Created().json(PaymentCreationResponse::from_domain(result)))
 }
 
-pub async fn find_payment_by_id(
-    state: web::Data<AppState>,
-    id: web::Path<Uuid>,
-) -> Result<HttpResponse, ApiError> {
-    let id = id.into_inner();
-
-    let payment = state.payment_service.find_payment_by_id(id).await?;
-    Ok(HttpResponse::Ok().json(PaymentResponse::from_domain(&payment)))
-}
-
 pub async fn find_payment_by_reference(
     state: web::Data<AppState>,
     reference: web::Path<String>,

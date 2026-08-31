@@ -120,14 +120,6 @@ impl PaymentService for PaymentServiceImpl {
         Ok(response)
     }
 
-    async fn find_payment_by_id(&self, id: Uuid) -> Result<Payment, DomainError> {
-        let paid = self.payment_repository.find_by_id(id).await?;
-        match paid {
-            Some(paid) => Ok(paid),
-            None => Err(DomainError::PaymentNotFound(id)),
-        }
-    }
-
     async fn find_payment_by_reference(&self, reference: &str) -> Result<Payment, DomainError> {
         let fetched_payment = self.payment_repository.find_by_reference(reference).await?;
 
