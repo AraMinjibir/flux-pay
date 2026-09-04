@@ -1,11 +1,12 @@
 use actix_web::web::{self};
 
-use crate::api::payment_controller::{
+use crate::api::{health_controller, payment_controller::{
     delete_payment, find_all_payments, find_payment_by_merchant, find_payment_by_method,
     find_payment_by_provider, find_payment_by_reference, find_payment_by_status, generate_payment,
-};
+}};
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.route("/health", web::get().to(health_controller::health));
     cfg.service(
         web::scope("/api/v1").service(
             web::scope("/payments")
