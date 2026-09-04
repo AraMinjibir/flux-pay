@@ -1,5 +1,3 @@
-use std::env;
-
 use serde::{Deserialize, Serialize};
 
 use crate::domain::payment::payment::PaymentInitializationRequest;
@@ -10,7 +8,6 @@ pub struct ZainpayInitializationRequest {
     pub email: Option<String>,
     pub amount: i64,
     pub tnx_ref: String,
-    pub zainbox_code: String,
     pub mobile_number: Option<String>,
     pub currency: String,
     pub reference: String,
@@ -29,7 +26,6 @@ impl From<&PaymentInitializationRequest> for ZainpayInitializationRequest {
             allow_recurring_payment: true,
             mobile_number: None,
             tnx_ref: payment.reference.clone(),
-            zainbox_code: env::var("ZAIN_BOX_CODE").expect("invalid code"),
         }
     }
 }
