@@ -4,7 +4,10 @@ use uuid::Uuid;
 
 use crate::{
     domain::{
-        errors::repository_error::{RepositoryError, map_sqlx_error},
+        errors::{
+            domain_error::DomainError,
+            repository_error::{RepositoryError, map_sqlx_error},
+        },
         payment::{
             method::PaymentMethod, payment::Payment, provider::PaymentProvider,
             repository::PaymentRepository, status::PaymentStatus,
@@ -70,7 +73,7 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(row.map(|r| r.into_domain()))
+        Ok(row.map(|r| r.into_domain()).transpose()?)
     }
     async fn find_by_reference(&self, reference: &str) -> Result<Option<Payment>, RepositoryError> {
         let row: Option<PaymentRow> = query_as!(PaymentRow, r#"
@@ -84,7 +87,7 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(row.map(|r| r.into_domain()))
+        Ok(row.map(|r| r.into_domain()).transpose()?)
     }
 
     async fn find_by_status(
@@ -103,7 +106,12 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
+        let payments = rows
+            .into_iter()
+            .map(PaymentRow::into_domain)
+            .collect::<Result<Vec<Payment>, DomainError>>()?;
+
+        Ok(payments)
     }
 
     async fn find_by_provider(
@@ -122,7 +130,12 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
+        let payments = rows
+            .into_iter()
+            .map(PaymentRow::into_domain)
+            .collect::<Result<Vec<Payment>, DomainError>>()?;
+
+        Ok(payments)
     }
 
     async fn find_by_method(
@@ -141,7 +154,12 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
+        let payments = rows
+            .into_iter()
+            .map(PaymentRow::into_domain)
+            .collect::<Result<Vec<Payment>, DomainError>>()?;
+
+        Ok(payments)
     }
     async fn find_by_merchant(&self, merchant_id: Uuid) -> Result<Vec<Payment>, RepositoryError> {
         let rows: Vec<PaymentRow> = sqlx::query_as!(
@@ -155,7 +173,12 @@ impl PaymentRepository for PostgresPaymentRepository {
         .await
         .map_err(map_sqlx_error)?;
 
-        Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
+        let payments = rows
+            .into_iter()
+            .map(PaymentRow::into_domain)
+            .collect::<Result<Vec<Payment>, DomainError>>()?;
+
+        Ok(payments)
     }
 
     async fn find_all(&self) -> Result<Vec<Payment>, RepositoryError> {
@@ -168,7 +191,12 @@ impl PaymentRepository for PostgresPaymentRepository {
         .fetch_all(&self.pool)
         .await
         .map_err(map_sqlx_error)?;
-        Ok(rows.into_iter().map(|rs| rs.into_domain()).collect())
+        let payments = rows
+            .into_iter()
+            .map(PaymentRow::into_domain)
+            .collect::<Result<Vec<Payment>, DomainError>>()?;
+
+        Ok(payments)
     }
     async fn update(&self, payment: &Payment) -> Result<(), RepositoryError> {
         let row = PaymentRow::from_domain(payment);
