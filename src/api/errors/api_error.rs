@@ -104,6 +104,7 @@ impl From<DomainError> for ApiError {
             DomainError::ReqwestError(error)
             | DomainError::RedisError(error)
             | DomainError::DatabaseError(error)
+            | DomainError::ConfigurationError(error)
             | DomainError::SerializationError(error)
             | DomainError::Internal(error) => Self::Internal(error),
 
