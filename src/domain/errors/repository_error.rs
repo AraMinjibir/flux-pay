@@ -1,3 +1,5 @@
+use crate::domain::errors::domain_error::DomainError;
+
 #[derive(Debug)]
 pub enum RepositoryError {
     DuplicateEntity,
@@ -46,5 +48,40 @@ pub fn map_sqlx_error(err: sqlx::Error) -> RepositoryError {
         }
 
         _ => RepositoryError::DatabaseError(err.to_string()),
+    }
+}
+
+impl From<DomainError> for RepositoryError {
+    fn from(value: DomainError) -> Self {
+        match value {
+            DomainError::DuplicateEntity => RepositoryError::DuplicateEntity,
+            DomainError::EntityNotFound => RepositoryError::EntityNotFound,
+
+            DomainError::ForeignKeyViolation => RepositoryError::ForeignKeyViolation,
+
+            DomainError::NullConstraintViolation => RepositoryError::NullConstraintViolation,
+
+            DomainError::CheckConstraintViolation => RepositoryError::CheckConstraintViolation,
+
+            DomainError::DataTooLong => RepositoryError::DataTooLong,
+
+            DomainError::InvalidDataFormat => RepositoryError::InvalidDataFormat,
+
+            DomainError::NumericOverflow => RepositoryError::NumericOverflow,
+
+            DomainError::DeadlockDetected => RepositoryError::DeadlockDetected,
+
+            DomainError::TransactionTimeout => RepositoryError::TransactionTimeout,
+
+            DomainError::SerializationFailure => RepositoryError::SerializationFailure,
+
+            DomainError::ConnectionError => RepositoryError::ConnectionError,
+
+            DomainError::PoolTimeout => RepositoryError::PoolTimeout,
+
+            DomainError::DatabaseError(message) => RepositoryError::DatabaseError(message),
+
+            _ => RepositoryError::DatabaseError(value.to_string()),
+        }
     }
 }

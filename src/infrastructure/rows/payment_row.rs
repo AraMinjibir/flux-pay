@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::domain::{
+    errors::domain_error::DomainError,
     payment::{
         method::PaymentMethod, payment::Payment, provider::PaymentProvider, status::PaymentStatus,
     },
@@ -29,25 +30,27 @@ pub struct PaymentRow {
     pub paid_at: Option<DateTime<Utc>>,
 }
 impl PaymentRow {
-    pub fn into_domain(self) -> Payment {
-        let currency = Currency::from_str(&self.currency).expect("invalid currency");
+    pub fn into_domain(self) -> Result<Payment, DomainError> {
+        let currency = Currency::from_str(&self.currency)
+            .map_err(|e| DomainError::ValidationError(vec![e.to_string()]))?;
 
-        let money = Money::new(self.amount, currency).expect("Invalid amount");
+        let money = Money::new(self.amount, currency)
+            .map_err(|e| DomainError::ValidationError(vec![e.to_string()]))?;
 
         let status = PaymentStatus::from_str(&self.status)
-            .expect("PaymentRow contains an invalid payment status");
+            .map_err(|e| DomainError::ValidationError(vec![e.to_string()]))?;
 
         let payment_method = PaymentMethod::from_str(&self.payment_method)
-            .expect("PaymentRow contains an invalid payment method");
+            .map_err(|e| DomainError::ValidationError(vec![e.to_string()]))?;
 
         let provider = self
             .payment_provider
             .as_deref()
             .map(PaymentProvider::from_str)
             .transpose()
-            .expect("Invalid payment provider");
+            .map_err(|e| DomainError::ValidationError(vec![e.to_string()]))?;
 
-        Payment::new(
+        Ok(Payment::new(
             self.id,
             self.merchant_id,
             money,
@@ -62,9 +65,8 @@ impl PaymentRow {
             self.idempotency_key,
             self.created_at,
             self.paid_at,
-        )
+        ))
     }
-
     pub fn from_domain(domain: &Payment) -> Self {
         Self {
             id: domain.id(),
