@@ -53,6 +53,7 @@ pub enum DomainError {
     SerializationFailure,
     SerializationError(String),
     Internal(String),
+   ConfigurationError(String)
 }
 
 impl DomainError {
@@ -173,6 +174,9 @@ impl fmt::Display for DomainError {
 
             DomainError::PaymentProviderFailed { error, .. } => {
                 write!(f, "Payment provider failed: {error}")
+            }
+            DomainError::ConfigurationError(msg) => {
+                write!(f, "Configuration error: {}", msg)
             }
         }
     }
