@@ -53,7 +53,7 @@ pub enum DomainError {
     SerializationFailure,
     SerializationError(String),
     Internal(String),
-   ConfigurationError(String)
+    ConfigurationError(String),
 }
 
 impl DomainError {
