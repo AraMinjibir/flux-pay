@@ -1,8 +1,63 @@
 [package]
-name = "pay-flux"
+name = "flux-pay"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+# Web framework
 actix-web = "4.9.0"
 tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Time and identifiers
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+once_cell = "1"
+
+# Database
+sqlx = { version = "0.8", features = [
+    "runtime-tokio",
+    "postgres",
+    "macros",
+    "uuid",
+    "chrono"
+] }
+
+# Redis
+redis = { version = "0.32", features = ["tokio-comp"] }
+
+# HTTP client
+reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls"
+] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# Traits and enums
+async-trait = "0.1"
+strum = "0.27"
+strum_macros = "0.27"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+#tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Testing
+mockall = "0.12"
+testcontainers = "0.25"
+testcontainers-modules = { version = "0.13", features = [
+    "postgres",
+    "redis",
+] }
+
+rand = "0.9"

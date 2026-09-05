@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE payments\n            SET\n                status = $1,\n               payment_provider = $2,\n                provider_reference = $3,\n                failure_reason = $4,\n                retry_count = $5,\n                paid_at = $6\n            WHERE id = $7\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Int2",
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cd015d496c63b3878603067aa1be243721d9d3684d1868ca09b092f458dcdec8"
+}
