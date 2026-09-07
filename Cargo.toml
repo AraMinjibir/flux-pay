@@ -24,7 +24,8 @@ sqlx = { version = "0.8", features = [
     "postgres",
     "macros",
     "uuid",
-    "chrono"
+    "chrono",
+    "tls-rustls"
 ] }
 
 # Redis
