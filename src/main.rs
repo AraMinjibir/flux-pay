@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, web};
+use actix_web::{App, HttpServer, middleware::Logger, web};
 use flux_pay::config::{bootstrap::build_app_state, routes};
 use tracing::info;
 use tracing_subscriber::{EnvFilter, fmt};
@@ -27,6 +27,7 @@ async fn main() -> anyhow::Result<()> {
 
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .app_data(state.clone())
             .configure(routes::configure)
     })
