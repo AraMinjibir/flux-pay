@@ -68,7 +68,7 @@ jobs:
           SQLX_OFFLINE: "true"
 
       - name: Run tests
-        run: cargo test --locked
+         run: cargo test --locked -- --test-threads=1
         env:
           SQLX_OFFLINE: "true"
 
