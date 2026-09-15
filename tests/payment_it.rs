@@ -64,13 +64,14 @@ async fn should_fetch_payment_using_reference() {
 async fn should_find_all_payments() {
     let ctx = TestContex::new().await;
 
-    for _ in 0.. {
+    for _ in 0..4 {
         let payment = test_payment();
         ctx.repository.save(&payment).await.unwrap();
     }
 
     let payments = ctx.repository.find_all().await.unwrap();
-    assert_eq!(payments.iter().len(), 4);
+
+    assert_eq!(payments.len(), 4);
 }
 
 #[tokio::test]
