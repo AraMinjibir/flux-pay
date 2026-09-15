@@ -191,8 +191,10 @@ When retries are exhausted, the failure is non-retryable, or the provider's circ
 
 * **Phase 2:** Refunds & transaction reversals
 * **Phase 3:** Authentication & merchant isolation
-* **Phase 4:** Transactional Outbox Pattern & Kafka integration
-* **Phase 5:** OpenTelemetry, metrics, and distributed tracing
+* **Phase 4:** Ledger
+* **Phare 5:** Reconciliation
+* **Phase 6:** Transactional Outbox Pattern & Kafka integration
+* **Phase 7:** OpenTelemetry, metrics, and distributed tracing
 
 ---
 
