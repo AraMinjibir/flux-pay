@@ -137,8 +137,6 @@ Every payment request is validated and protected by Redis-backed distributed ide
 Transient provider failures are classified and retried according to the retry policy using exponential backoff and jitter, reducing the risk of synchronized retry storms. Repeated provider failures contribute to the circuit breaker, which can prevent further requests from being sent to an unhealthy provider.
 
 When retries are exhausted, the failure is non-retryable, or the provider's circuit is open, the orchestrator can fail over to another available provider. The final transaction state is then persisted and returned to the client.
----
-
 
 **Design Principles**
 
@@ -165,6 +163,14 @@ When retries are exhausted, the failure is non-retryable, or the provider's circ
 | Logging          | tracing                 |
 
 ---
+## Operational Readiness
+Live Demo
+https://flux-pay.onrender.com
+
+# Example Endpoints
+POST /payments
+GET  /payments
+GET  /payments/id/{id}
 
 ## MVP Scope
 
