@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::domain::{errors::domain_error::DomainError, refund::status::RefundStatus, shared::money::Money};
+use crate::domain::{
+    errors::domain_error::DomainError, refund::status::RefundStatus, shared::money::Money,
+};
 
 #[derive(Debug, Clone)]
 pub struct Refund {
@@ -10,7 +12,7 @@ pub struct Refund {
     amount: Money,
     status: RefundStatus,
     reason: Option<String>,
-    provider_refund_id:Option<String>,
+    provider_refund_id: Option<String>,
     idempotency_key: Option<String>,
     created_at: DateTime<Utc>,
     updated_at: Option<DateTime<Utc>>,
@@ -33,7 +35,7 @@ impl Refund {
             payment_id,
             amount,
             status,
-           reason,
+            reason,
             provider_refund_id,
             idempotency_key,
             created_at,
@@ -42,14 +44,13 @@ impl Refund {
     }
 
     pub fn create_refund(
-        payment_id:Uuid,
+        payment_id: Uuid,
         amount: Money,
         reason: Option<String>,
     ) -> Result<Self, DomainError> {
-
         let mut errors = Vec::new();
 
-        if payment_id.is_nil(){
+        if payment_id.is_nil() {
             errors.push("Payment id must be provided".to_string())
         }
         if !errors.is_empty() {
@@ -57,16 +58,17 @@ impl Refund {
         }
 
         let now = Utc::now();
-        Ok(Self { 
+        Ok(Self {
             id: Uuid::new_v4(),
-             payment_id, amount, 
-             status: RefundStatus::Processing, 
-             reason: reason, 
-             provider_refund_id: None,
-              idempotency_key: None, 
-              created_at: now, 
-              updated_at: None
-             })
+            payment_id,
+            amount,
+            status: RefundStatus::Processing,
+            reason: reason,
+            provider_refund_id: None,
+            idempotency_key: None,
+            created_at: now,
+            updated_at: None,
+        })
     }
 
     pub fn id(&self) -> Uuid {
@@ -85,18 +87,18 @@ impl Refund {
     pub fn reason(&self) -> Option<String> {
         self.reason.clone()
     }
-    pub fn provider_refund_id(&self) -> Option<String>{
+    pub fn provider_refund_id(&self) -> Option<String> {
         self.provider_refund_id.clone()
     }
 
-    pub fn idempotency_key(&self) -> Option<String>{
+    pub fn idempotency_key(&self) -> Option<String> {
         self.idempotency_key.clone()
     }
 
-    pub fn created_at(&self) ->  DateTime<Utc>{
+    pub fn created_at(&self) -> DateTime<Utc> {
         self.created_at
     }
-    pub fn updated_at(&self) ->  Option<DateTime<Utc>>{
+    pub fn updated_at(&self) -> Option<DateTime<Utc>> {
         self.updated_at
     }
 }

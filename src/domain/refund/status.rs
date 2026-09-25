@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, Display, EnumString, PartialEq)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-pub enum RefundStatus{
+pub enum RefundStatus {
     Processing,
     Refunded,
-    Failed
-
+    Failed,
 }
