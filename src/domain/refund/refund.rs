@@ -9,7 +9,7 @@ pub struct Refund {
     payment_id: Uuid,
     amount: Money,
     status: RefundStatus,
-    reason: Option< String>,
+    reason: Option<String>,
     provider_refund_id:Option<String>,
     idempotency_key: Option<String>,
     created_at: DateTime<Utc>,
@@ -68,5 +68,35 @@ impl Refund {
               updated_at: None
              })
     }
-    
+
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+    pub fn payment_id(&self) -> Uuid {
+        self.payment_id
+    }
+
+    pub fn amount(&self) -> Money {
+        self.amount.clone()
+    }
+    pub fn status(&self) -> RefundStatus {
+        self.status.clone()
+    }
+    pub fn reason(&self) -> Option<String> {
+        self.reason.clone()
+    }
+    pub fn provider_refund_id(&self) -> Option<String>{
+        self.provider_refund_id.clone()
+    }
+
+    pub fn idempotency_key(&self) -> Option<String>{
+        self.idempotency_key.clone()
+    }
+
+    pub fn created_at(&self) ->  DateTime<Utc>{
+        self.created_at
+    }
+    pub fn updated_at(&self) ->  Option<DateTime<Utc>>{
+        self.updated_at
+    }
 }
