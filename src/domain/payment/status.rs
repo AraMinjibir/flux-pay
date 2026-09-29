@@ -20,7 +20,7 @@ impl PaymentStatus {
         Ok(())
     }
 
-    pub fn validate_transition(
+    fn validate_transition(
         current: &PaymentStatus,
         next: &PaymentStatus,
     ) -> Result<(), DomainError> {
@@ -34,7 +34,7 @@ impl PaymentStatus {
         }
     }
 
-    pub fn can_transition_to(&self, next: &PaymentStatus) -> bool {
+    fn can_transition_to(&self, next: &PaymentStatus) -> bool {
         use PaymentStatus::*;
 
         matches!(

@@ -7,6 +7,7 @@ use crate::{
     domain::{
         errors::repository_error::RepositoryError,
         payment::{provider::PaymentProvider, status::PaymentStatus},
+        refund::status::RefundStatus,
     },
 };
 
@@ -34,6 +35,11 @@ pub enum DomainError {
         from: PaymentStatus,
         to: PaymentStatus,
     },
+    InvalidRefundStatusTransition {
+        from: RefundStatus,
+        to: RefundStatus,
+    },
+
     PaymentNotFound(Uuid),
     PaymentWithRefNotFound(String),
 
@@ -98,6 +104,13 @@ impl fmt::Display for DomainError {
                 write!(f, "The currency provided is Unsupported")
             }
             DomainError::InvalidPaymentStatusTransition { from, to } => {
+                write!(
+                    f,
+                    "Invalid payment status transition from {} to {}",
+                    from, to
+                )
+            }
+            DomainError::InvalidRefundStatusTransition { from, to } => {
                 write!(
                     f,
                     "Invalid payment status transition from {} to {}",
