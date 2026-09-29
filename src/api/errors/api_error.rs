@@ -83,6 +83,10 @@ impl From<DomainError> for ApiError {
                 "Invalid state transition from {:?} to {:?}",
                 from, to
             )),
+            DomainError::InvalidRefundStatusTransition { from, to } => Self::Validation(format!(
+                "Invalid state transition from {:?} to {:?}",
+                from, to
+            )),
 
             // Not found
             DomainError::PaymentNotFound(id) => {
