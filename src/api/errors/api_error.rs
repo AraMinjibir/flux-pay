@@ -103,6 +103,13 @@ impl From<DomainError> for ApiError {
             DomainError::RequestInProgress => Self::Conflict("Request already in progress".into()),
 
             DomainError::DuplicateEntity => Self::Conflict("Duplicate entity".into()),
+            DomainError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            } => Self::Conflict(format!(
+                "Refund amount exceeds available balance. Requested: {}, Available: {}",
+                requested, available
+            )),
 
             // Internal errors
             DomainError::ReqwestError(error)
