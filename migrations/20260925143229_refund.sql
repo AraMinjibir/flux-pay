@@ -5,6 +5,7 @@ CREATE TABLE refunds (
     currency VARCHAR(3) NOT NULL,
     status VARCHAR(20) NOT NULL,
     reason TEXT,
+    failure_reason TEXT,
     provider_refund_id VARCHAR(255),
     idempotency_key VARCHAR(255) UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
