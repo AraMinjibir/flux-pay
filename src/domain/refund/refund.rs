@@ -12,6 +12,7 @@ pub struct Refund {
     amount: Money,
     status: RefundStatus,
     reason: Option<String>,
+    failure_reason: Option<String>,
     provider_refund_id: Option<String>,
     idempotency_key: Option<String>,
     created_at: DateTime<Utc>,
@@ -25,6 +26,7 @@ impl Refund {
         amount: Money,
         status: RefundStatus,
         reason: Option<String>,
+        failure_reason: Option<String>,
         provider_refund_id: Option<String>,
         idempotency_key: Option<String>,
         created_at: DateTime<Utc>,
@@ -36,6 +38,7 @@ impl Refund {
             amount,
             status,
             reason,
+            failure_reason,
             provider_refund_id,
             idempotency_key,
             created_at,
@@ -64,6 +67,7 @@ impl Refund {
             amount,
             status: RefundStatus::Processing,
             reason: reason,
+            failure_reason: None,
             provider_refund_id: None,
             idempotency_key: None,
             created_at: now,
@@ -86,6 +90,9 @@ impl Refund {
     }
     pub fn reason(&self) -> Option<String> {
         self.reason.clone()
+    }
+    pub fn failure_reason(&self) -> Option<String> {
+        self.failure_reason.clone()
     }
     pub fn provider_refund_id(&self) -> Option<String> {
         self.provider_refund_id.clone()
