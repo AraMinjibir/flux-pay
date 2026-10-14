@@ -21,6 +21,8 @@ pub enum RepositoryError {
     PoolTimeout,
 
     DatabaseError(String),
+
+    RefundAmountExceedsAvailable { requested: i64, available: i64 },
 }
 
 pub fn map_sqlx_error(err: sqlx::Error) -> RepositoryError {
