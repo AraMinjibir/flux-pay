@@ -1,22 +1,18 @@
 #![allow(dead_code)]
 
+use chrono::Utc;
 use flux_pay::{
     application::{
         circuit_breaker::CircuitBreaker,
         payment_orchestrator::{OrchestrationMetadata, OrchestrationResult, PaymentOrchestrator},
-    },
-    domain::{
-        orchestration::gateway::PaymentGateway,
-        payment::{
+    }, domain::{
+        orchestration::gateway::PaymentGateway, payment::{
             method::PaymentMethod::Card,
             payment::{CreatePaymentCommand, Payment, PaymentInitializationResult},
             provider::PaymentProvider,
             status::PaymentStatus,
-        },
-        services::payment_service_impl::PaymentServiceImpl,
-        shared::{currency::Currency::NGN, money::Money},
-    },
-    infrastructure::orchestration::provider_registry::ProviderRegistry,
+        }, refund::{refund::Refund, status::RefundStatus}, services::payment_service_impl::PaymentServiceImpl, shared::{currency::Currency::{self, NGN}, money::Money},
+    }, infrastructure::orchestration::provider_registry::ProviderRegistry,
 };
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc, time::Duration};
@@ -144,4 +140,22 @@ pub fn test_payload() -> Value {
       "payment_method": "MobileMoney",
        "idempotency_key": "0c5d0e64-c6b7-3af5-4d43-33c23d8113ae"
     })
+}
+pub fn test_refund(payment_id: Uuid, amount: i64, idempotency_key: &str) -> Refund {
+    let now = Utc::now();
+    Refund::new(
+        Uuid::new_v4(),
+        payment_id,
+        test_money(amount),
+        RefundStatus::Processing,
+        Some("customer request".to_string()),
+        None,
+        None,
+        Some(idempotency_key.to_string()),
+        now,
+        Some(now),
+    )
+}
+pub fn test_money(amount: i64) -> Money {
+    Money::new(amount, Currency::NGN).unwrap()
 }
