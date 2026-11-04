@@ -11,6 +11,7 @@ use crate::{
             provider::PaymentProvider,
             status::PaymentStatus,
         },
+        refund::refund::Refund,
         shared::currency::Currency,
     },
     infrastructure::config::app_config::MockConfig,
@@ -69,5 +70,16 @@ impl PaymentGateway for MockPaymentGateway {
             reference: None,
             description: None,
         })
+    }
+    async fn refund_payment(&self, refund: &Refund) -> Result<Refund, DomainError> {
+        let mut processed = refund.clone();
+
+        if refund.reason().map(|r| r == "mock_fail").unwrap_or(false) {
+            processed.mark_failed("Mock provider rejected the refund".to_string());
+        } else {
+            processed.mark_refunded(format!("MOCK-REFUND-{}", Uuid::new_v4()));
+        }
+
+        Ok(processed)
     }
 }
