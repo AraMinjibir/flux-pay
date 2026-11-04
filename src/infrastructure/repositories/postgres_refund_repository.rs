@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::domain::{
     errors::repository_error::{RepositoryError, map_sqlx_error},
@@ -43,7 +44,7 @@ impl RefundRepository for PostgresRefundRepository {
             SELECT COALESCE(SUM(amount), 0)::BIGINT AS "refunded_amount!"
             FROM refunds
             WHERE payment_id = $1
-              AND status IN ('PENDING', 'PROCESSING', 'SUCCEEDED')
+              AND status IN ('PENDING', 'PROCESSING', 'REDUNDED')
             "#,
             refund.payment_id()
         )
@@ -118,5 +119,74 @@ impl RefundRepository for PostgresRefundRepository {
         tx.commit().await.map_err(map_sqlx_error)?;
 
         Ok(created_refund)
+    }
+
+    async fn update_refund(&self, refund: &Refund) -> Result<Refund, RepositoryError> {
+        let row = RefundRow::from_refund_domain(refund);
+
+        let updated_row = sqlx::query_as!(
+            RefundRow,
+            r#"
+            UPDATE refunds
+            SET status             = $2,
+                failure_reason     = $3,
+                provider_refund_id = $4,
+                updated_at         = $5
+            WHERE id = $1
+            RETURNING
+                id,
+                payment_id,
+                amount,
+                currency,
+                status,
+                reason,
+                failure_reason,
+                provider_refund_id,
+                idempotency_key,
+                created_at,
+                updated_at
+            "#,
+            row.id,
+            row.status,
+            row.failure_reason,
+            row.provider_refund_id,
+            row.updated_at
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(map_sqlx_error)?
+        .ok_or(RepositoryError::EntityNotFound)?;
+
+        updated_row
+            .into_refund_domain()
+            .map_err(RepositoryError::from)
+    }
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Refund>, RepositoryError> {
+        let row = sqlx::query_as!(
+            RefundRow,
+            r#"
+            SELECT
+                id,
+                payment_id,
+                amount,
+                currency,
+                status,
+                reason,
+                failure_reason,
+                provider_refund_id,
+                idempotency_key,
+                created_at,
+                updated_at
+            FROM refunds
+            WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(map_sqlx_error)?;
+
+        row.map(|r| r.into_refund_domain().map_err(RepositoryError::from))
+            .transpose()
     }
 }
