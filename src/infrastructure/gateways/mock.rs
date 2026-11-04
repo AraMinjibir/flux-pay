@@ -77,7 +77,7 @@ impl PaymentGateway for MockPaymentGateway {
         if refund.reason().map(|r| r == "mock_fail").unwrap_or(false) {
             processed.mark_failed("Mock provider rejected the refund".to_string());
         } else {
-            processed.mark_refunded(format!("MOCK-REFUND-{}", Uuid::new_v4()));
+            processed.mark_refunded(Some(format!("MOCK-REFUND-{}", Uuid::new_v4())));
         }
 
         Ok(processed)
