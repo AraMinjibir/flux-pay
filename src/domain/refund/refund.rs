@@ -74,6 +74,18 @@ impl Refund {
             updated_at: None,
         })
     }
+    pub fn mark_refunded(&mut self, provider_refund_id: String) {
+        self.provider_refund_id = Some(provider_refund_id);
+        self.status = RefundStatus::Refunded;
+        self.failure_reason = None;
+        self.updated_at = Some(Utc::now());
+    }
+
+    pub fn mark_failed(&mut self, reason: String) {
+        self.status = RefundStatus::Failed;
+        self.failure_reason = Some(reason);
+        self.updated_at = Some(Utc::now());
+    }
 
     pub fn id(&self) -> Uuid {
         self.id
