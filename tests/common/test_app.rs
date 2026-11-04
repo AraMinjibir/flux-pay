@@ -26,6 +26,7 @@ use flux_pay::{
             payment::{PaymentInitializationRequest, PaymentInitializationResult},
             provider::PaymentProvider,
         },
+        refund::refund::Refund,
         services::{
             idempotency_service_impl::IdempotencyServiceImpl,
             payment_service_impl::PaymentServiceImpl,
@@ -296,6 +297,9 @@ impl PaymentGateway for TimeoutGateway {
             .map_err(|error| DomainError::ReqwestError(error.to_string()))?;
 
         unreachable!()
+    }
+    async fn refund_payment(&self, _refund: &Refund) -> Result<Refund, DomainError> {
+        todo!("Refund not implemented yet")
     }
 }
 
