@@ -74,17 +74,24 @@ impl Refund {
             updated_at: None,
         })
     }
-    pub fn mark_refunded(&mut self, provider_refund_id: String) {
-        self.provider_refund_id = Some(provider_refund_id);
-        self.status = RefundStatus::Refunded;
+    pub fn mark_processing(&mut self) -> Result<(), DomainError> {
+        RefundStatus::transition(&mut self.status, RefundStatus::Processing)?;
         self.failure_reason = None;
         self.updated_at = Some(Utc::now());
+        Ok(())
     }
-
-    pub fn mark_failed(&mut self, reason: String) {
-        self.status = RefundStatus::Failed;
+    pub fn mark_refunded(&mut self, provider_refund_id: Option<String>) -> Result<(), DomainError> {
+        RefundStatus::transition(&mut self.status, RefundStatus::Refunded)?;
+        self.provider_refund_id = provider_refund_id;
+        self.failure_reason = None;
+        self.updated_at = Some(Utc::now());
+        Ok(())
+    }
+    pub fn mark_failed(&mut self, reason: String) -> Result<(), DomainError> {
+        RefundStatus::transition(&mut self.status, RefundStatus::Failed)?;
         self.failure_reason = Some(reason);
         self.updated_at = Some(Utc::now());
+        Ok(())
     }
 
     pub fn id(&self) -> Uuid {
