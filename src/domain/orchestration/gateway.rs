@@ -7,6 +7,7 @@ use crate::domain::{
         payment::{PaymentInitializationRequest, PaymentInitializationResult},
         provider::PaymentProvider,
     },
+    refund::refund::Refund,
 };
 
 #[async_trait]
@@ -19,4 +20,5 @@ pub trait PaymentGateway: Send + Sync {
         &self,
         payment: &PaymentInitializationRequest,
     ) -> Result<PaymentInitializationResult, DomainError>;
+    async fn refund_payment(&self, refund: &Refund) -> Result<Refund, DomainError>;
 }
