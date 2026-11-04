@@ -8,6 +8,7 @@ use crate::{
         payment::{
             method::PaymentMethod, payment::PaymentInitializationResult, provider::PaymentProvider,
         },
+        refund::refund::Refund,
         shared::currency::Currency,
     },
     infrastructure::{
@@ -67,5 +68,8 @@ impl PaymentGateway for ZainpayGateway {
         let parsed: ZainpayInitializationResponse = serde_json::from_str(&body)?;
 
         Ok(parsed.into())
+    }
+    async fn refund_payment(&self, _refund: &Refund) -> Result<Refund, DomainError> {
+        todo!("Zainpay refund not implemented yet")
     }
 }
