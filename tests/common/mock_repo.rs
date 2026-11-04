@@ -16,6 +16,7 @@ use flux_pay::domain::{
         repository::PaymentRepository,
         status::PaymentStatus,
     },
+    refund::refund::Refund,
     services::idempotency_service::IdempotencyService,
 };
 
@@ -89,6 +90,8 @@ mock! {
         &self,
         payment: &PaymentInitializationRequest,
     ) -> Result<PaymentInitializationResult, DomainError>;
+
+    async fn refund_payment(&self, refund: &Refund) -> Result<Refund, DomainError>;
 
     }
 }
