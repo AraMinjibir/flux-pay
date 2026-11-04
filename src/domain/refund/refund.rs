@@ -18,7 +18,13 @@ pub struct Refund {
     created_at: DateTime<Utc>,
     updated_at: Option<DateTime<Utc>>,
 }
-
+#[derive(Debug, Clone)]
+pub struct RefundCreationCommand {
+    pub payment_id: Uuid,
+    pub amount: Money,
+    pub reason: Option<String>,
+    pub idempotency_key: Uuid,
+}
 impl Refund {
     pub fn new(
         id: Uuid,
