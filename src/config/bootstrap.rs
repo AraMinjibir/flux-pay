@@ -14,7 +14,7 @@ use crate::{
         payment::provider::PaymentProvider,
         services::{
             idempotency_service_impl::IdempotencyServiceImpl,
-            payment_service_impl::PaymentServiceImpl,
+            payment_service_impl::PaymentServiceImpl, refund_service::RefundService,
         },
     },
     infrastructure::{
@@ -32,7 +32,10 @@ use crate::{
             provider_registry::ProviderRegistry,
         },
         redis::redis_idempotency_repository::RedisIdempotencyRepository,
-        repositories::postgres_payment_repository::PostgresPaymentRepository,
+        repositories::{
+            postgres_payment_repository::PostgresPaymentRepository,
+            postgres_refund_repository::PostgresRefundRepository,
+        },
     },
 };
 
@@ -59,7 +62,7 @@ pub async fn build_app_state() -> Result<AppState, DomainError> {
         idempotency_config,
     ));
 
-    let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository));
+    let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository.clone()));
 
     let paystack_config = PaystackConfig {
         secret_key: env::var("PAYSTACK_SECRET_KEY").map_err(|_| {
@@ -151,10 +154,18 @@ pub async fn build_app_state() -> Result<AppState, DomainError> {
         idempotency_service,
         orchestrator,
     ));
+    let refund_repository = Arc::new(PostgresRefundRepository::new(pool.clone()));
 
+    let refund_service = Arc::new(RefundService::new(
+        payment_repository.clone(),
+        refund_repository.clone(),
+        redis_repository.clone(),
+        provider_registry.clone(),
+    ));
     info!("FluxPay application state initialized");
     Ok(AppState {
         payment_service,
+        refund_service,
         payment_repository,
         provider_registry,
     })
