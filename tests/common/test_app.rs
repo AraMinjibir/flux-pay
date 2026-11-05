@@ -29,7 +29,7 @@ use flux_pay::{
         refund::refund::Refund,
         services::{
             idempotency_service_impl::IdempotencyServiceImpl,
-            payment_service_impl::PaymentServiceImpl,
+            payment_service_impl::PaymentServiceImpl, refund_service::RefundService,
         },
         shared::currency::Currency,
     },
@@ -38,7 +38,10 @@ use flux_pay::{
         gateways::mock::MockPaymentGateway,
         orchestration::provider_registry::ProviderRegistry,
         redis::redis_idempotency_repository::RedisIdempotencyRepository,
-        repositories::postgres_payment_repository::PostgresPaymentRepository,
+        repositories::{
+            postgres_payment_repository::PostgresPaymentRepository,
+            postgres_refund_repository::PostgresRefundRepository,
+        },
     },
 };
 use reqwest::Client;
@@ -178,7 +181,7 @@ pub async fn build_test_app_state(
         idempotency_config,
     ));
 
-    let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository));
+    let idempotency_service = Arc::new(IdempotencyServiceImpl::new(redis_repository.clone()));
 
     // Test providers
     // Paystack -> TimeoutGateway
@@ -234,9 +237,17 @@ pub async fn build_test_app_state(
         idempotency_service,
         orchestrator,
     ));
+    let refund_repository = Arc::new(PostgresRefundRepository::new(pool.clone()));
 
+    let refund_service = Arc::new(RefundService::new(
+        payment_repository.clone(),
+        refund_repository.clone(),
+        redis_repository.clone(),
+        registry.clone(),
+    ));
     AppState {
         payment_service,
+        refund_service,
         payment_repository,
         provider_registry: registry,
     }
