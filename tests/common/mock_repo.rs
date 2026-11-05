@@ -5,6 +5,7 @@ use uuid::Uuid;
 use flux_pay::domain::{
     errors::{domain_error::DomainError, repository_error::RepositoryError},
     idempotency::models::{ReservationResult, StoredResponse},
+    idempotency::repository::IdempotencyRepository,
     orchestration::{
         capability::ProviderCapabilities, gateway::PaymentGateway, routing_request::RoutingRequest,
         routing_strategy::RoutingStrategy,
@@ -16,7 +17,7 @@ use flux_pay::domain::{
         repository::PaymentRepository,
         status::PaymentStatus,
     },
-    refund::refund::Refund,
+    refund::{refund::Refund, repository::RefundRepository},
     services::idempotency_service::IdempotencyService,
 };
 
@@ -93,5 +94,24 @@ mock! {
 
     async fn refund_payment(&self, refund: &Refund) -> Result<Refund, DomainError>;
 
+    }
+}
+mock! {
+    pub RefundRepo{}
+    #[async_trait]
+    impl RefundRepository for RefundRepo {
+        async fn create_refund(&self, refund: &Refund) -> Result<Refund, RepositoryError>;
+    async fn update_refund(&self, refund: &Refund) -> Result<Refund, RepositoryError>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Refund>, RepositoryError>;
+    }
+}
+mock! {
+    pub IdempotencyRepo{}
+    #[async_trait]
+    impl IdempotencyRepository for IdempotencyRepo {
+        async fn reserve(&self, key: Uuid) -> Result<ReservationResult, DomainError>;
+
+    async fn complete(&self, key: Uuid, response: StoredResponse) -> Result<(), DomainError>;
+    async fn release(&self, key: Uuid) -> Result<(), DomainError>;
     }
 }
