@@ -27,6 +27,19 @@ pub struct RefundService {
 }
 
 impl RefundService {
+    pub fn new(
+        payments: Arc<dyn PaymentRepository>,
+        refunds: Arc<dyn RefundRepository>,
+        idempotency: Arc<dyn IdempotencyRepository>,
+        providers: Arc<ProviderRegistry>,
+    ) -> Self {
+        Self {
+            payments,
+            refunds,
+            idempotency,
+            providers,
+        }
+    }
     pub async fn create_refund(&self, cmd: RefundCreationCommand) -> Result<Refund, DomainError> {
         // 1. Domain validation (read-only, nothing to clean up on failure)
         let (payment, gateway) = self.validate(&cmd).await?;
