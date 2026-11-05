@@ -16,8 +16,9 @@ use flux_pay::domain::{
         repository::PaymentRepository,
         status::PaymentStatus,
     },
-    refund::refund::Refund,
+    refund::{refund::Refund,repository::RefundRepository},
     services::idempotency_service::IdempotencyService,
+    idempotency::repository::IdempotencyRepository,
 };
 
 mock! {
@@ -93,5 +94,24 @@ mock! {
 
     async fn refund_payment(&self, refund: &Refund) -> Result<Refund, DomainError>;
 
+    }
+}
+mock! {
+    pub RefundRepo{}
+    #[async_trait]
+    impl RefundRepository for RefundRepo {
+        async fn create_refund(&self, refund: &Refund) -> Result<Refund, RepositoryError>;
+    async fn update_refund(&self, refund: &Refund) -> Result<Refund, RepositoryError>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Refund>, RepositoryError>;
+    }
+}
+mock! {
+    pub IdempotencyRepo{}
+    #[async_trait]
+    impl IdempotencyRepository for IdempotencyRepo {
+        async fn reserve(&self, key: Uuid) -> Result<ReservationResult, DomainError>;
+
+    async fn complete(&self, key: Uuid, response: StoredResponse) -> Result<(), DomainError>;
+    async fn release(&self, key: Uuid) -> Result<(), DomainError>;
     }
 }
