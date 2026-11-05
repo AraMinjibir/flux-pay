@@ -44,7 +44,7 @@ impl RefundRepository for PostgresRefundRepository {
             SELECT COALESCE(SUM(amount), 0)::BIGINT AS "refunded_amount!"
             FROM refunds
             WHERE payment_id = $1
-              AND status IN ('PENDING', 'PROCESSING', 'REDUNDED')
+              AND status IN ('PENDING', 'PROCESSING', 'REFUNDED')
             "#,
             refund.payment_id()
         )
