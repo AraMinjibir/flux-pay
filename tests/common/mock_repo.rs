@@ -5,6 +5,7 @@ use uuid::Uuid;
 use flux_pay::domain::{
     errors::{domain_error::DomainError, repository_error::RepositoryError},
     idempotency::models::{ReservationResult, StoredResponse},
+    idempotency::repository::IdempotencyRepository,
     orchestration::{
         capability::ProviderCapabilities, gateway::PaymentGateway, routing_request::RoutingRequest,
         routing_strategy::RoutingStrategy,
@@ -16,9 +17,8 @@ use flux_pay::domain::{
         repository::PaymentRepository,
         status::PaymentStatus,
     },
-    refund::{refund::Refund,repository::RefundRepository},
+    refund::{refund::Refund, repository::RefundRepository},
     services::idempotency_service::IdempotencyService,
-    idempotency::repository::IdempotencyRepository,
 };
 
 mock! {
