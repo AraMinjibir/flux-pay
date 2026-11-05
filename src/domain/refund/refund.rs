@@ -77,7 +77,7 @@ impl Refund {
             provider_refund_id: None,
             idempotency_key: None,
             created_at: now,
-            updated_at: None,
+            updated_at: Some(now),
         })
     }
     pub fn mark_processing(&mut self) -> Result<(), DomainError> {
