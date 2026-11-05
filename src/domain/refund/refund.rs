@@ -71,7 +71,7 @@ impl Refund {
             id: Uuid::new_v4(),
             payment_id,
             amount,
-            status: RefundStatus::Processing,
+            status: RefundStatus::Pending,
             reason: reason,
             failure_reason: None,
             provider_refund_id: None,
