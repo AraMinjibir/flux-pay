@@ -96,7 +96,12 @@ impl RefundService {
 
         Ok(refund)
     }
-
+    pub async fn find_refund_by_id(&self, id: Uuid) -> Result<Refund, DomainError> {
+        self.refunds
+            .find_by_id(id)
+            .await?
+            .ok_or(DomainError::EntityNotFound)
+    }
     async fn validate(
         &self,
         cmd: &RefundCreationCommand,
