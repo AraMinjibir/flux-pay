@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            TRUNCATE TABLE\n                payments\n            RESTART IDENTITY CASCADE;    \n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "dbdec9befada4b9d5d200699414ed2ed603d7cabfef033d61774b3486ac072d9"
+}
