@@ -1,0 +1,86 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE refunds\n            SET status             = $2,\n                failure_reason     = $3,\n                provider_refund_id = $4,\n                updated_at         = $5\n            WHERE id = $1\n            RETURNING\n                id,\n                payment_id,\n                amount,\n                currency,\n                status,\n                reason,\n                failure_reason,\n                provider_refund_id,\n                idempotency_key,\n                created_at,\n                updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "payment_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "amount",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "currency",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "reason",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "failure_reason",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "provider_refund_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "idempotency_key",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "3035830b25d9c0743fab48d33ed05cda7165e365a038c048385f942eed36b6a2"
+}
