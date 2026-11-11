@@ -7,6 +7,7 @@ use crate::{
     domain::{
         errors::repository_error::RepositoryError,
         payment::{provider::PaymentProvider, status::PaymentStatus},
+        refund::status::RefundStatus,
     },
 };
 
@@ -34,6 +35,11 @@ pub enum DomainError {
         from: PaymentStatus,
         to: PaymentStatus,
     },
+    InvalidRefundStatusTransition {
+        from: RefundStatus,
+        to: RefundStatus,
+    },
+
     PaymentNotFound(Uuid),
     PaymentWithRefNotFound(String),
 
@@ -54,6 +60,10 @@ pub enum DomainError {
     SerializationError(String),
     Internal(String),
     ConfigurationError(String),
+    RefundAmountExceedsAvailable {
+        requested: i64,
+        available: i64,
+    },
 }
 
 impl DomainError {
@@ -98,6 +108,13 @@ impl fmt::Display for DomainError {
                 write!(f, "The currency provided is Unsupported")
             }
             DomainError::InvalidPaymentStatusTransition { from, to } => {
+                write!(
+                    f,
+                    "Invalid payment status transition from {} to {}",
+                    from, to
+                )
+            }
+            DomainError::InvalidRefundStatusTransition { from, to } => {
                 write!(
                     f,
                     "Invalid payment status transition from {} to {}",
@@ -178,6 +195,12 @@ impl fmt::Display for DomainError {
             DomainError::ConfigurationError(msg) => {
                 write!(f, "Configuration error: {}", msg)
             }
+            DomainError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            } => {
+                write!(f, "Refund amount exceeded {} to {}", requested, available)
+            }
         }
     }
 }
@@ -213,6 +236,13 @@ impl From<RepositoryError> for DomainError {
             RepositoryError::DeadlockDetected => DomainError::DeadlockDetected,
             RepositoryError::TransactionTimeout => DomainError::TransactionTimeout,
             RepositoryError::SerializationFailure => DomainError::SerializationFailure,
+            RepositoryError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            } => DomainError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            },
             RepositoryError::DatabaseError(msg) => DomainError::DatabaseError(msg),
         }
     }

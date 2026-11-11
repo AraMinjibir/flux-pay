@@ -196,9 +196,9 @@ GET  /payments/id/{id}
 ## Roadmap
 
 * **Phase 2:** Refunds & transaction reversals
-* **Phase 3:** Authentication & merchant isolation
-* **Phase 4:** Ledger
-* **Phare 5:** Reconciliation
+* **Phase 3:** Ledger
+* **Phare 4:** Reconciliation
+* **Phase 5:** Authentication & merchant isolation
 * **Phase 6:** Transactional Outbox Pattern & Kafka integration
 * **Phase 7:** OpenTelemetry, metrics, and distributed tracing
 

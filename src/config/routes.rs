@@ -7,6 +7,7 @@ use crate::api::{
         find_payment_by_provider, find_payment_by_reference, find_payment_by_status,
         generate_payment,
     },
+    refund_controller::{get_refund_by_id, send_refund_request},
 };
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
@@ -32,5 +33,12 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                     web::get().to(find_payment_by_merchant),
                 ),
         ),
+    );
+    cfg.service(
+        web::scope("/api/v2")
+            .service(
+                web::scope("/refunds/{payment_id}").route("", web::post().to(send_refund_request)),
+            )
+            .route("", web::get().to(get_refund_by_id)),
     );
 }

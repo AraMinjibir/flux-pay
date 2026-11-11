@@ -104,4 +104,13 @@ impl IdempotencyRepository for RedisIdempotencyRepository {
 
         Ok(())
     }
+    async fn release(&self, key: Uuid) -> Result<(), DomainError> {
+        let mut conn = self.client.get_multiplexed_async_connection().await?;
+        redis::cmd("DEL")
+            .arg(key.to_string())
+            .query_async::<()>(&mut conn)
+            .await?;
+
+        Ok(())
+    }
 }

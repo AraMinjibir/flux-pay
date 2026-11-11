@@ -11,4 +11,5 @@ pub trait IdempotencyRepository: Send + Sync {
     async fn reserve(&self, key: Uuid) -> Result<ReservationResult, DomainError>;
 
     async fn complete(&self, key: Uuid, response: StoredResponse) -> Result<(), DomainError>;
+    async fn release(&self, key: Uuid) -> Result<(), DomainError>;
 }

@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COALESCE(SUM(amount), 0)::BIGINT AS \"refunded_amount!\"\n            FROM refunds\n            WHERE payment_id = $1\n              AND status IN ('PENDING', 'PROCESSING', 'REFUNDED')\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "refunded_amount!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b59849ca702f4146bd3ebd1de348758e332604e34f713b2ce37a61db9f3fb1e6"
+}
