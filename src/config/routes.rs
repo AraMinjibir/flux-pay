@@ -36,7 +36,9 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     );
     cfg.service(
         web::scope("/api/v2")
-            .service(web::scope("/refunds/{payment_id}").route("", web::post().to(send_refund_request)))
+            .service(
+                web::scope("/refunds/{payment_id}").route("", web::post().to(send_refund_request)),
+            )
             .route("", web::get().to(get_refund_by_id)),
     );
 }

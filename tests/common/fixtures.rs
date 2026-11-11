@@ -5,21 +5,33 @@ use flux_pay::{
     application::{
         circuit_breaker::CircuitBreaker,
         payment_orchestrator::{OrchestrationMetadata, OrchestrationResult, PaymentOrchestrator},
-    }, domain::{
-        idempotency::models::StoredResponse, orchestration::gateway::PaymentGateway, payment::{
+    },
+    domain::{
+        idempotency::models::StoredResponse,
+        orchestration::gateway::PaymentGateway,
+        payment::{
             method::PaymentMethod::Card,
             payment::{CreatePaymentCommand, Payment, PaymentInitializationResult},
             provider::PaymentProvider,
             status::PaymentStatus,
-        }, refund::{refund::Refund, refund::RefundCreationCommand, status::RefundStatus}, services::{payment_service_impl::PaymentServiceImpl, refund_service::RefundService}, shared::{currency::Currency::{self, NGN}, money::Money},
-    }, infrastructure::orchestration::provider_registry::ProviderRegistry,
+        },
+        refund::{refund::Refund, refund::RefundCreationCommand, status::RefundStatus},
+        services::{payment_service_impl::PaymentServiceImpl, refund_service::RefundService},
+        shared::{
+            currency::Currency::{self, NGN},
+            money::Money,
+        },
+    },
+    infrastructure::orchestration::provider_registry::ProviderRegistry,
 };
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::common::mock_repo::{MockGateway, MockIdempotency, MockIdempotencyRepo, MockPaymentRepo, MockRefundRepo, MockRouting};
+use crate::common::mock_repo::{
+    MockGateway, MockIdempotency, MockIdempotencyRepo, MockPaymentRepo, MockRefundRepo, MockRouting,
+};
 
 pub struct TestContext {
     pub gateway: MockGateway,
@@ -137,7 +149,7 @@ impl RefundTestContext {
             Arc::new(self.refund_repo),
             Arc::new(self.idempotency),
             Arc::new(registry),
-        ) 
+        )
     }
 
     pub fn payment(
@@ -147,7 +159,7 @@ impl RefundTestContext {
     ) -> Payment {
         let paid_at = matches!(status, PaymentStatus::Success).then(Utc::now);
         let provider_reference = provider.as_ref().map(|_| "PROV-REF-123".to_string());
-    
+
         Payment::new(
             Uuid::new_v4(),
             Uuid::parse_str("11111111-1111-1111-1111-111111111111").unwrap(),
@@ -166,8 +178,12 @@ impl RefundTestContext {
         )
     }
     pub fn pending_refund(payment_id: Uuid) -> Refund {
-        Refund::create_refund(payment_id, test_money(5_000), Some("customer request".to_string()))
-            .unwrap()
+        Refund::create_refund(
+            payment_id,
+            test_money(5_000),
+            Some("customer request".to_string()),
+        )
+        .unwrap()
     }
 
     pub fn stored_response(provider_reference: String) -> StoredResponse {

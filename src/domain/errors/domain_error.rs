@@ -60,7 +60,10 @@ pub enum DomainError {
     SerializationError(String),
     Internal(String),
     ConfigurationError(String),
-    RefundAmountExceedsAvailable { requested: i64, available: i64 }
+    RefundAmountExceedsAvailable {
+        requested: i64,
+        available: i64,
+    },
 }
 
 impl DomainError {
@@ -192,12 +195,11 @@ impl fmt::Display for DomainError {
             DomainError::ConfigurationError(msg) => {
                 write!(f, "Configuration error: {}", msg)
             }
-            DomainError::RefundAmountExceedsAvailable  { requested, available } => {
-                write!(
-                    f,
-                    "Refund amount exceeded {} to {}",
-                    requested, available
-                )
+            DomainError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            } => {
+                write!(f, "Refund amount exceeded {} to {}", requested, available)
             }
         }
     }
@@ -234,8 +236,13 @@ impl From<RepositoryError> for DomainError {
             RepositoryError::DeadlockDetected => DomainError::DeadlockDetected,
             RepositoryError::TransactionTimeout => DomainError::TransactionTimeout,
             RepositoryError::SerializationFailure => DomainError::SerializationFailure,
-            RepositoryError::RefundAmountExceedsAvailable{ requested, available } 
-             => DomainError::RefundAmountExceedsAvailable { requested, available },
+            RepositoryError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            } => DomainError::RefundAmountExceedsAvailable {
+                requested,
+                available,
+            },
             RepositoryError::DatabaseError(msg) => DomainError::DatabaseError(msg),
         }
     }
