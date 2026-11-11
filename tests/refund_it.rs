@@ -163,7 +163,7 @@ async fn should_allow_multiple_partial_refunds_summing_to_payment_amount() {
 async fn should_allow_refund_exactly_equal_to_remaining_available() {
     let ctx = TestContex::new().await;
     let payment_id = ctx.seed_payment(10_000).await;
-    ctx.seed_refund_row(payment_id, 6_000, "SUCCEEDED").await;
+    ctx.seed_refund_row(payment_id, 6_000, "REFUNDED").await;
 
     let refund = test_refund(payment_id, 4_000, "idem-boundary-1");
 
@@ -198,8 +198,8 @@ async fn should_reject_refund_exceeding_payment_amount() {
 async fn should_reject_refund_when_active_refunds_consume_the_balance() {
     let ctx = TestContex::new().await;
 
-    // PENDING, PROCESSING and SUCCEEDED all reserve funds.
-    for status in ["PENDING", "PROCESSING", "SUCCEEDED"] {
+    // PENDING, PROCESSING and REFUNDED all reserve funds.
+    for status in ["PENDING", "PROCESSING", "REFUNDED"] {
         ctx.db.reset().await;
 
         let payment_id = ctx.seed_payment(10_000).await;
