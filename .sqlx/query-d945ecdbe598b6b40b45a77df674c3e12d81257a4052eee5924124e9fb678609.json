@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id\n            FROM ledger_accounts\n            WHERE code = $1 AND currency = $2 AND owner_type = 'PLATFORM' AND is_active\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Bpchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d945ecdbe598b6b40b45a77df674c3e12d81257a4052eee5924124e9fb678609"
+}

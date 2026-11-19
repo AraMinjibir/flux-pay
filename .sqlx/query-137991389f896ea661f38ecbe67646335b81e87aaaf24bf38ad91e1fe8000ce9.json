@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE journals\n            SET status = 'POSTED', posted_at = NOW()\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "137991389f896ea661f38ecbe67646335b81e87aaaf24bf38ad91e1fe8000ce9"
+}
