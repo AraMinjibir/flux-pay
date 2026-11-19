@@ -1,4 +1,5 @@
 pub mod account;
+pub mod account_codes;
 pub mod account_type;
 pub mod amount;
 pub mod entry_direction;
@@ -10,3 +11,4 @@ pub mod journal_event_type;
 pub mod journal_posting_rule;
 pub mod journal_status;
 pub mod owner_type;
+pub mod posting_plan;
