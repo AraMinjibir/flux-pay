@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::domain::ledger::{entry_direction::EntryDirection, error::LedgerError};
+use crate::domain::{errors::ledger_error::LedgerError, ledger::entry_direction::EntryDirection};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AccountType {

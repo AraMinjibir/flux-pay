@@ -3,7 +3,6 @@ pub mod account_codes;
 pub mod account_type;
 pub mod amount;
 pub mod entry_direction;
-pub mod error;
 pub mod jounal_source_type;
 pub mod journal;
 pub mod journal_entry;

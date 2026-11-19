@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     application::payment_orchestrator::OrchestrationFailureMetadata,
     domain::{
-        errors::repository_error::RepositoryError,
+        errors::{ledger_error::LedgerError, repository_error::RepositoryError},
         payment::{provider::PaymentProvider, status::PaymentStatus},
         refund::status::RefundStatus,
     },
@@ -244,6 +244,16 @@ impl From<RepositoryError> for DomainError {
                 available,
             },
             RepositoryError::DatabaseError(msg) => DomainError::DatabaseError(msg),
+        }
+    }
+}
+impl From<LedgerError> for DomainError {
+    fn from(err: LedgerError) -> Self {
+        match err {
+            LedgerError::InvalidAmount => DomainError::InvalidAmount,
+            LedgerError::AmountOverflow => DomainError::NumericOverflow,
+            LedgerError::UnknownVariant { .. } => DomainError::InvalidDataFormat,
+            other => DomainError::ValidationError(vec![other.to_string()]),
         }
     }
 }
