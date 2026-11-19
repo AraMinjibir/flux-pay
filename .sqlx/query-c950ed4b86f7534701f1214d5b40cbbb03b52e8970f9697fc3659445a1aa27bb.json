@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO ledger_accounts\n                (code, name, account_type, normal_balance, currency, owner_type, parent_account_id)\n            SELECT $1, $2, 'ASSET', 'DEBIT', $3, 'PROVIDER', control.id\n            FROM ledger_accounts control\n            WHERE control.code = $4 AND control.currency = $3 AND control.owner_type = 'PLATFORM'\n            ON CONFLICT DO NOTHING\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Bpchar",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c950ed4b86f7534701f1214d5b40cbbb03b52e8970f9697fc3659445a1aa27bb"
+}

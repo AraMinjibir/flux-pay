@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT account_id\n            FROM ledger_account_balances\n            WHERE account_id = ANY($1)\n            ORDER BY account_id\n            FOR UPDATE\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "account_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8bd6b1557fda4bb58f4b4918e548cde96e47e3091e50b4c88e347ef7d6f2df43"
+}

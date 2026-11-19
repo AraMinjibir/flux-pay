@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE ledger_account_balances AS b\n            SET total_debits  = b.total_debits  + d.debits,\n                total_credits = b.total_credits + d.credits\n            FROM UNNEST($1::uuid[], $2::bigint[], $3::bigint[])\n                AS d(account_id, debits, credits)\n            WHERE b.account_id = d.account_id\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Int8Array",
+        "Int8Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "791ae3cf04e10cff79ce11f5120a09be2ec511b86884455a89a2305d2ffd7f83"
+}
