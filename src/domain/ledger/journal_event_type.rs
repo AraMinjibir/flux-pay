@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::domain::ledger::error::LedgerError;
+use crate::domain::errors::ledger_error::LedgerError;
 
 /// The precise accounting event a journal records. Refund, reversal and payout
 /// events join this enum as those features reach the ledger.

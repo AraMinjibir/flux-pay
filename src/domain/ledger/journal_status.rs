@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::domain::ledger::error::LedgerError;
+use crate::domain::errors::ledger_error::LedgerError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JournalStatus {

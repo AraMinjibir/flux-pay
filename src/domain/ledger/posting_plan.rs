@@ -2,8 +2,9 @@ use std::collections::BTreeMap;
 
 use uuid::Uuid;
 
-use crate::domain::ledger::{
-    amount::minor, entry_direction::EntryDirection, error::LedgerError, journal::JournalDraft,
+use crate::domain::{
+    errors::ledger_error::LedgerError,
+    ledger::{amount::minor, entry_direction::EntryDirection, journal::JournalDraft},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

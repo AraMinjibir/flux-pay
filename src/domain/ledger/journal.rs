@@ -2,16 +2,14 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::domain::{
-    ledger::{
+    errors::ledger_error::LedgerError, ledger::{
         amount::{currency_of, minor},
         entry_direction::EntryDirection,
-        error::LedgerError,
         jounal_source_type::JournalSourceType,
         journal_entry::NewJournalEntry,
         journal_event_type::JournalEventType,
         journal_status::JournalStatus,
-    },
-    shared::currency::Currency,
+    }, shared::currency::Currency,
 };
 
 /// A persisted journal header.

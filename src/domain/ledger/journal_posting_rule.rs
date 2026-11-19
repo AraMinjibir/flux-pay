@@ -1,24 +1,9 @@
-//! Posting rules for the settle-to-FluxPay funds flow.
-//!
-//! Providers settle collected funds into FluxPay-controlled accounts, so FluxPay
-//! owes merchants until it pays them out. The accounts involved:
-//!
-//!   1000 Settlement Bank          (platform, postable)
-//!   1100 Provider Receivable      (control) -> one subledger account per provider
-//!   2000 Merchant Payable         (control) -> one subledger account per merchant
-//!   4000 Platform Fee Revenue     (platform, postable)
-//!   5000 Provider Fee Expense     (platform, postable)
-//!
-//! Rules are pure: they take resolved account ids and amounts and return a
-//! `JournalDraft`. Resolving accounts and persisting the draft belong to the
-//! application layer.
-
 use uuid::Uuid;
 
 use crate::domain::{
+    errors::ledger_error::LedgerError,
     ledger::{
         amount::{currency_of, minor, money},
-        error::LedgerError,
         jounal_source_type::JournalSourceType,
         journal::JournalDraft,
         journal_entry::NewJournalEntry,
